@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Mental Health Assessment Results - IllnessInsight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5 animate-fade-in">
+                <h1 class="display-5 fw-bold text-primary">
+                    <i class="fas fa-chart-bar me-3"></i>Assessment Results
+                </h1>
+                <p class="lead text-muted">Your {{ screening.screening_type.title() }} Screening Results</p>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-{{ 'success' if screening.risk_level == 'low' else 'warning' if screening.risk_level == 'moderate' else 'danger' }} text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-{{ 'check-circle' if screening.risk_level == 'low' else 'exclamation-triangle' }} me-2"></i>
+                        Assessment Summary
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-2">Total Score: <span class="fw-bold">{{ screening.score }}</span></h6>
+                            <h6 class="mb-2">Risk Level: 
+                                <span class="badge bg-{{ 'success' if screening.risk_level == 'low' else 'warning' if screening.risk_level == 'moderate' else 'danger' }}">
+                                    {{ screening.risk_level.title() }}
+                                </span>
+                            </h6>
+                            <p class="text-muted mb-0">{{ screening.recommendations }}</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-{{ 'smile' if screening.risk_level == 'low' else 'meh' if screening.risk_level == 'moderate' else 'frown' }} fa-2x text-{{ 'success' if screening.risk_level == 'low' else 'warning' if screening.risk_level == 'moderate' else 'danger' }}"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Recommendations -->
+            {% if ai_recommendations %}
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>AI-Powered Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for recommendation in ai_recommendations %}
+                        <div class="col-12 mb-2">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-lightbulb text-warning me-2 mt-1"></i>
+                                <p class="mb-1">{{ recommendation }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Sentiment Analysis -->
+            {% if screening.sentiment_analysis %}
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-brain me-2"></i>Sentiment Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Overall Sentiment</h6>
+                            <span class="badge bg-{{ 'success' if screening.sentiment_analysis.sentiment == 'positive' else 'warning' if screening.sentiment_analysis.sentiment == 'neutral' else 'danger' }}">
+                                {{ screening.sentiment_analysis.sentiment.title() }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Confidence Score</h6>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: {{ (screening.sentiment_analysis.confidence * 100) }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.1f"|format(screening.sentiment_analysis.confidence * 100) }}%</small>
+                        </div>
+                    </div>
+                    
+                    {% if screening.sentiment_analysis.emotions %}
+                    <div class="mt-3">
+                        <h6>Detected Emotions</h6>
+                        {% for emotion in screening.sentiment_analysis.emotions %}
+                        <span class="badge bg-light text-dark me-1">{{ emotion }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Next Steps -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-arrow-right me-2"></i>Recommended Next Steps
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <a href="{{ url_for('interventions') }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-tasks me-2"></i>View Intervention Plan
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <a href="{{ url_for('telemedicine') }}" class="btn btn-outline-success">
+                                    <i class="fas fa-user-md me-2"></i>Connect with Professional
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <a href="{{ url_for('health_quests') }}" class="btn btn-outline-warning">
+                                    <i class="fas fa-trophy me-2"></i>Start Wellness Quest
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <a href="{{ url_for('mental_health') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-redo me-2"></i>Take Another Assessment
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Resources -->
+            {% if screening.risk_level in ['moderate', 'high'] %}
+            <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle me-2"></i>Professional Support Resources</h6>
+                <ul class="mb-0">
+                    <li>National Suicide Prevention Lifeline: 988</li>
+                    <li>Crisis Text Line: Text HOME to 741741</li>
+                    <li>SAMHSA National Helpline: 1-800-662-4357</li>
+                    <li>Psychology Today Therapist Finder: psychologytoday.com</li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

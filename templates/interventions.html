@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Intervention Recommendations - IllnessInsight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5 animate-fade-in">
+                <h1 class="display-5 fw-bold text-primary">
+                    <i class="fas fa-tasks me-3"></i>Personalized Intervention Plan
+                </h1>
+                <p class="lead text-muted">AI-generated care pathways based on your health assessments</p>
+            </div>
+
+            {% if recommendations %}
+                {% for recommendation in recommendations %}
+                <div class="card shadow-lg border-0 mb-4 border-start border-4 border-{{ 'danger' if recommendation.priority == 'urgent' else 'warning' if recommendation.priority == 'high' else 'info' }}">
+                    <div class="card-header bg-{{ 'danger' if recommendation.priority == 'urgent' else 'warning' if recommendation.priority == 'high' else 'info' }} text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-{{ 'exclamation-triangle' if recommendation.priority == 'urgent' else 'star' if recommendation.priority == 'high' else 'info-circle' }} me-2"></i>
+                                {{ recommendation.title }}
+                            </h5>
+                            <span class="badge bg-light text-dark">
+                                {{ recommendation.priority.title() }} Priority
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="text-muted mb-2">Condition: {{ recommendation.condition_type.title() }}</h6>
+                                <p class="mb-3">{{ recommendation.description }}</p>
+                                
+                                <h6 class="mb-2">Action Items:</h6>
+                                <div class="row">
+                                    {% for action in recommendation.action_items %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex align-items-start">
+                                            <div class="form-check me-2">
+                                                <input class="form-check-input" type="checkbox" id="action-{{ loop.index0 }}-{{ recommendation.id }}">
+                                            </div>
+                                            <label class="form-check-label small" for="action-{{ loop.index0 }}-{{ recommendation.id }}">
+                                                {{ action }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bg-light rounded p-3">
+                                    <h6 class="mb-3">Quick Actions</h6>
+                                    <div class="d-grid gap-2">
+                                        {% if recommendation.condition_type == 'cancer' %}
+                                        <button class="btn btn-outline-danger btn-sm" onclick="findScreeningCenters()">
+                                            <i class="fas fa-map-marker-alt me-1"></i>Find Screening Centers
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" onclick="scheduleImaging()">
+                                            <i class="fas fa-x-ray me-1"></i>Schedule Imaging
+                                        </button>
+                                        {% elif recommendation.condition_type == 'diabetes' %}
+                                        <button class="btn btn-outline-success btn-sm" onclick="createMealPlan()">
+                                            <i class="fas fa-utensils me-1"></i>Create Meal Plan
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" onclick="findGroceryDeals()">
+                                            <i class="fas fa-shopping-cart me-1"></i>Find Grocery Deals
+                                        </button>
+                                        {% elif recommendation.condition_type == 'heart' %}
+                                        <button class="btn btn-outline-danger btn-sm" onclick="findCardiologist()">
+                                            <i class="fas fa-user-md me-1"></i>Find Cardiologist
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="startExercisePlan()">
+                                            <i class="fas fa-running me-1"></i>Start Exercise Plan
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="setReminders()">
+                                            <i class="fas fa-bell me-1"></i>Set Reminders
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Created: {{ recommendation.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </small>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-success" onclick="markCompleted({{ recommendation.id }})">
+                                        <i class="fas fa-check me-1"></i>Mark Complete
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="dismissRecommendation({{ recommendation.id }})">
+                                        <i class="fas fa-times me-1"></i>Dismiss
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="card shadow-lg border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-clipboard-check fa-4x text-muted mb-4"></i>
+                        <h4 class="text-muted">No Active Interventions</h4>
+                        <p class="text-muted mb-4">Complete health assessments to receive personalized intervention recommendations.</p>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="{{ url_for('heart') }}" class="btn btn-outline-danger">
+                                <i class="fas fa-heart me-2"></i>Heart Assessment
+                            </a>
+                            <a href="{{ url_for('diabetes') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-vial me-2"></i>Diabetes Assessment
+                            </a>
+                            <a href="{{ url_for('cancer') }}" class="btn btn-outline-info">
+                                <i class="fas fa-microscope me-2"></i>Cancer Screening
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Emergency Action Plan -->
+            <div class="card shadow-lg border-0 mt-5 border-top border-4 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Emergency Action Plan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Immediate Medical Emergency</h6>
+                            <p class="small text-muted">Call 108 if experiencing:</p>
+                            <ul class="small">
+                                <li>Chest pain or pressure</li>
+                                <li>Difficulty breathing</li>
+                                <li>Severe bleeding</li>
+                                <li>Loss of consciousness</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Healthcare Provider Contact</h6>
+                            <p class="small text-muted">Contact your provider for:</p>
+                            <ul class="small">
+                                <li>Worsening symptoms</li>
+                                <li>New concerning symptoms</li>
+                                <li>Medication side effects</li>
+                                <li>Follow-up appointments</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function findScreeningCenters() {
+    alert('Screening center finder coming soon. Please contact your insurance provider for current network locations.');
+}
+
+function scheduleImaging() {
+    alert('Imaging scheduling coming soon. Please contact your healthcare provider or imaging center directly.');
+}
+
+function createMealPlan() {
+    alert('Meal planning feature coming soon. Consider consulting with a registered dietitian.');
+}
+
+function findGroceryDeals() {
+    alert('Grocery deal finder coming soon. Check local store apps and websites for current promotions.');
+}
+
+function findCardiologist() {
+    alert('Provider finder coming soon. Contact your insurance for in-network cardiologists.');
+}
+
+function startExercisePlan() {
+    alert('Exercise plan feature coming soon. Consult with your healthcare provider before starting any new exercise program.');
+}
+
+function setReminders() {
+    alert('Reminder system coming soon. Use your phone or calendar app to set health-related reminders.');
+}
+
+function markCompleted(recommendationId) {
+    alert('Marking recommendation as completed. This feature will be fully implemented soon.');
+}
+
+function dismissRecommendation(recommendationId) {
+    alert('Dismissing recommendation. This feature will be fully implemented soon.');
+}
+</script>
+{% endblock %}

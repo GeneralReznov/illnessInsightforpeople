@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - IllnessInsight{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Chat page styling */
+@keyframes robot-talk {
+    0%, 100% { transform: scale(1) rotate(0deg); color: #28a745; }
+    25% { transform: scale(1.1) rotate(-2deg); color: #20c997; }
+    50% { transform: scale(1.2) rotate(2deg); color: #17a2b8; }
+    75% { transform: scale(1.1) rotate(-1deg); color: #28a745; }
+}
+
+@keyframes chat-bubble {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-10px) scale(1.05); opacity: 1; }
+}
+
+.chat-page-background {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 25%, #a5d6a7 50%, #81c784 75%, #66bb6a 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-page-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g opacity="0.1"><circle cx="20" cy="30" r="2" fill="%2328a745"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="80" cy="60" r="3" fill="%2320c997"><animate attributeName="r" values="3;5;3" dur="4s" repeatCount="indefinite"/></circle><path d="M30 40 Q50 30 70 40 Q50 50 30 40" stroke="%2317a2b8" stroke-width="1" fill="none" opacity="0.3"><animate attributeName="d" values="M30 40 Q50 30 70 40 Q50 50 30 40;M30 40 Q50 35 70 40 Q50 45 30 40;M30 40 Q50 30 70 40 Q50 50 30 40" dur="5s" repeatCount="indefinite"/></path></g></svg>') repeat;
+    background-size: 150px 150px;
+    animation: float-chat 8s linear infinite;
+}
+
+@keyframes float-chat {
+    0% { background-position: 0 0; }
+    100% { background-position: 150px 150px; }
+}
+
+.robot-icon-large {
+    font-size: 6rem;
+    animation: robot-talk 2.5s infinite;
+    filter: drop-shadow(0 0 20px rgba(40, 167, 69, 0.5));
+}
+
+.chat-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 3px solid #28a745;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(40, 167, 69, 0.2);
+}
+
+.chat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(40, 167, 69, 0.1), transparent);
+    animation: shimmer-green 3s linear infinite;
+}
+
+@keyframes shimmer-green {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.floating-chat-icons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.floating-chat-icon {
+    position: absolute;
+    animation: chat-bubble 3s ease-in-out infinite;
+}
+
+.chat-icon-1 { top: 12%; left: 5%; font-size: 2.5rem; color: rgba(40, 167, 69, 0.4); animation-delay: 0s; }
+.chat-icon-2 { top: 70%; left: 8%; font-size: 2rem; color: rgba(32, 201, 151, 0.4); animation-delay: 1s; }
+.chat-icon-3 { top: 25%; right: 10%; font-size: 2.8rem; color: rgba(23, 162, 184, 0.4); animation-delay: 2s; }
+.chat-icon-4 { top: 65%; right: 12%; font-size: 2.2rem; color: rgba(40, 167, 69, 0.3); animation-delay: 3s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-page-background">
+    <div class="floating-chat-icons">
+        <i class="fas fa-robot floating-chat-icon chat-icon-1"></i>
+        <i class="fas fa-comments floating-chat-icon chat-icon-2"></i>
+        <i class="fas fa-brain floating-chat-icon chat-icon-3"></i>
+        <i class="fas fa-lightbulb floating-chat-icon chat-icon-4"></i>
+    </div>
+
+<div class="container py-5 chat-page-animations">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-4 animate-fade-in position-relative">
+                <i class="fas fa-robot robot-icon-large text-success mb-4"></i>
+                <h1 class="display-4 fw-bold text-success">
+                    🤖 AI Assistant
+                </h1>
+                <p class="lead text-dark animate-slide-up" style="animation-delay: 0.3s; font-weight: 600;">Advanced AI-powered assistant for all your questions and tasks</p>
+            </div>
+
+            <div class="chat-container animate-slide-up" style="animation-delay: 0.6s;">
+                <div class="card chat-card shadow-lg">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center animate-glow">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comments me-2"></i>AI Assistant Chat
+                        </h5>
+                        <button class="btn btn-outline-light btn-sm" onclick="clearChat()">
+                            <i class="fas fa-trash me-1"></i>Clear Chat
+                        </button>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <div id="chat-messages" class="chat-messages">
+                            {% for message in chat_history %}
+                                <div class="message {{ 'user-message' if message.role == 'user' else 'bot-message' }}">
+                                    <div class="message-content">
+                                        <div class="message-avatar">
+                                            {% if message.role == 'user' %}
+                                                <i class="fas fa-user"></i>
+                                            {% else %}
+                                                <i class="fas fa-robot"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="message-text">
+                                            {{ message.content | replace('\n', '<br>') | safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-light">
+                        <form id="chat-form" class="d-flex gap-2">
+                            <input type="text" id="user-input" class="form-control" placeholder="Ask me anything..." required>
+                            <button type="submit" class="btn btn-success" id="send-button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Tips Cards -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h4 class="text-center mb-4">Quick Topics</h4>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-light health-tip-card" onclick="sendQuickMessage('Explain artificial intelligence and machine learning')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-robot text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6>Technology</h6>
+                            <p class="small text-muted">AI, programming, and tech trends</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-light health-tip-card" onclick="sendQuickMessage('Tell me about quantum physics and the universe')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-atom text-info mb-2" style="font-size: 2rem;"></i>
+                            <h6>Science</h6>
+                            <p class="small text-muted">Physics, chemistry, and discoveries</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-light health-tip-card" onclick="sendQuickMessage('What are effective study techniques and learning methods?')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-book text-success mb-2" style="font-size: 2rem;"></i>
+                            <h6>Education</h6>
+                            <p class="small text-muted">Learning tips and study methods</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-light health-tip-card" onclick="sendQuickMessage('Recommend some good movies and books')">
+                        <div class="card-body text-center">
+                            <i class="fas fa-film text-warning mb-2" style="font-size: 2rem;"></i>
+                            <h6>Entertainment</h6>
+                            <p class="small text-muted">Movies, books, and culture</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const chatMessages = document.getElementById('chat-messages');
+const chatForm = document.getElementById('chat-form');
+const messageInput = document.getElementById('user-input');
+const sendButton = document.getElementById('send-button');
+
+// Auto-scroll to bottom of chat
+function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Add message to chat
+function addMessage(content, isUser = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <div class="message-avatar">
+                <i class="fas fa-${isUser ? 'user' : 'robot'}"></i>
+            </div>
+            <div class="message-text">
+                ${content.replace(/\n/g, '<br>')}
+            </div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Send message
+async function sendMessage(message) {
+    if (!message.trim()) return;
+    
+    // Add user message
+    addMessage(message, true);
+    
+    // Disable form
+    sendButton.disabled = true;
+    sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        const response = await fetch('/chat_with_bot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            addMessage(data.response);
+        } else {
+            addMessage('Sorry, I encountered an error. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        addMessage('Sorry, I encountered an error. Please try again.');
+    } finally {
+        // Re-enable form
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+    }
+}
+
+// Quick message sender
+function sendQuickMessage(message) {
+    messageInput.value = message;
+    sendMessage(message);
+    messageInput.value = '';
+}
+
+// Clear chat
+async function clearChat() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        try {
+            await fetch('/chat/clear', { method: 'POST' });
+            location.reload();
+        } catch (error) {
+            console.error('Error clearing chat:', error);
+        }
+    }
+}
+
+// Form submission
+chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = messageInput.value;
+    messageInput.value = '';
+    sendMessage(message);
+});
+
+// Auto-scroll on page load
+window.addEventListener('load', scrollToBottom);
+</script>
+{% endblock %}

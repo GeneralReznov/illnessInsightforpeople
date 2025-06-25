@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Mental Health Screening - IllnessInsight{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Mental Health page styling */
+@keyframes brain-wave {
+    0%, 100% { transform: scale(1) rotate(0deg); color: #6f42c1; }
+    25% { transform: scale(1.1) rotate(3deg); color: #8a63d2; }
+    50% { transform: scale(1.2) rotate(-2deg); color: #a084e8; }
+    75% { transform: scale(1.1) rotate(5deg); color: #b19cd9; }
+}
+
+@keyframes mind-float {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    50% { transform: translateY(-15px) scale(1.05); opacity: 1; }
+}
+
+.mental-health-background {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 25%, #ce93d8 50%, #ba68c8 75%, #9c27b0 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.mental-health-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g opacity="0.1"><circle cx="25" cy="25" r="3" fill="%236f42c1"><animate attributeName="r" values="3;5;3" dur="4s" repeatCount="indefinite"/></circle><circle cx="75" cy="50" r="2" fill="%23ba68c8"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="50" cy="75" r="4" fill="%239c27b0"><animate attributeName="r" values="4;6;4" dur="5s" repeatCount="indefinite"/></circle></g></svg>') repeat;
+    background-size: 180px 180px;
+    animation: float-minds 12s linear infinite;
+}
+
+@keyframes float-minds {
+    0% { background-position: 0 0; }
+    100% { background-position: 180px 180px; }
+}
+
+.mental-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.mental-card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #6f42c1, #ba68c8, #9c27b0, #6f42c1);
+    border-radius: 20px;
+    z-index: -1;
+    animation: border-glow 3s linear infinite;
+}
+
+@keyframes border-glow {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.mental-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(111, 66, 193, 0.3);
+}
+
+.brain-icon-large {
+    font-size: 6rem;
+    animation: brain-wave 3s infinite;
+    filter: drop-shadow(0 0 20px rgba(111, 66, 193, 0.5));
+}
+
+.floating-mental-icons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.floating-mental-icon {
+    position: absolute;
+    animation: mind-float 4s ease-in-out infinite;
+}
+
+.mental-icon-1 { top: 15%; left: 8%; font-size: 2.5rem; color: rgba(111, 66, 193, 0.4); animation-delay: 0s; }
+.mental-icon-2 { top: 65%; left: 5%; font-size: 2rem; color: rgba(186, 104, 200, 0.4); animation-delay: 1s; }
+.mental-icon-3 { top: 25%; right: 12%; font-size: 2.8rem; color: rgba(156, 39, 176, 0.4); animation-delay: 2s; }
+.mental-icon-4 { top: 75%; right: 8%; font-size: 2.2rem; color: rgba(138, 99, 210, 0.4); animation-delay: 3s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mental-health-background">
+    <div class="floating-mental-icons">
+        <i class="fas fa-brain floating-mental-icon mental-icon-1"></i>
+        <i class="fas fa-heart floating-mental-icon mental-icon-2"></i>
+        <i class="fas fa-smile floating-mental-icon mental-icon-3"></i>
+        <i class="fas fa-leaf floating-mental-icon mental-icon-4"></i>
+    </div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5 animate-fade-in position-relative">
+                <i class="fas fa-brain brain-icon-large text-primary mb-4"></i>
+                <h1 class="display-4 fw-bold" style="color: #6f42c1;">
+                    🧠 Mental Health Screening
+                </h1>
+                <p class="lead text-dark animate-slide-up" style="animation-delay: 0.3s; font-weight: 600;">Comprehensive AI-powered mental health assessment and wellness monitoring</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Depression Screening -->
+                <div class="col-md-4 animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="card mental-card h-100 shadow-lg">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-cloud-rain fa-4x animate-pulse" style="color: #17a2b8;"></i>
+                            </div>
+                            <h5 class="card-title fw-bold" style="color: #6f42c1;">💧 Depression Screening</h5>
+                            <p class="card-text">PHQ-9 validated questionnaire for depression assessment and mood analysis</p>
+                            <a href="{{ url_for('depression_screening') }}" class="btn btn-info btn-lg animate-glow">
+                                <i class="fas fa-clipboard-check me-2"></i>Start Screening
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Anxiety Screening -->
+                <div class="col-md-4 animate-slide-up" style="animation-delay: 0.6s;">
+                    <div class="card mental-card h-100 shadow-lg">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-exclamation-triangle fa-4x animate-bounce" style="color: #ffc107;"></i>
+                            </div>
+                            <h5 class="card-title fw-bold" style="color: #6f42c1;">⚠️ Anxiety Assessment</h5>
+                            <p class="card-text">GAD-7 questionnaire for generalized anxiety disorder screening and analysis</p>
+                            <a href="{{ url_for('anxiety_screening') }}" class="btn btn-warning btn-lg animate-glow">
+                                <i class="fas fa-heart-rate me-2"></i>Start Assessment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stress Assessment -->
+                <div class="col-md-4 animate-slide-up" style="animation-delay: 0.9s;">
+                    <div class="card mental-card h-100 shadow-lg">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="fas fa-fire fa-4x animate-heartbeat" style="color: #dc3545;"></i>
+                            </div>
+                            <h5 class="card-title fw-bold" style="color: #6f42c1;">🔥 Stress Assessment</h5>
+                            <p class="card-text">Perceived Stress Scale for comprehensive stress evaluation and management</p>
+                            <a href="{{ url_for('stress_screening') }}" class="btn btn-danger btn-lg animate-glow">
+                                <i class="fas fa-thermometer-full me-2"></i>Start Assessment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mental Health Resources -->
+            <div class="card mt-5 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">
+                        <i class="fas fa-hands-helping me-2 text-success"></i>Mental Health Resources
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Crisis Support</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-phone text-danger me-2"></i>Emergency Services: 108</li>
+                                <li><i class="fas fa-life-ring text-warning me-2"></i>Crisis Hotline: 112</li>
+                                <li><i class="fas fa-comments text-info me-2"></i>Suicide Crisis Line: 9152987821</li>
+                                <li><i class="fas fa-hospital text-success me-2"></i>Poison Control: 1800-425-1213</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Professional Help</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-user-md text-info me-2"></i>Find a therapist near you</li>
+                                <li><i class="fas fa-hospital text-success me-2"></i>Mental health clinics</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1203 @@
+{% extends "base.html" %}
+
+{% block title %}Telemedicine & Support - IllnessInsight{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+@keyframes video-pulse {
+    0%, 100% { transform: scale(1) rotate(0deg); color: #17a2b8; filter: drop-shadow(0 0 15px rgba(23, 162, 184, 0.5)); }
+    50% { transform: scale(1.15) rotate(3deg); color: #0dcaf0; filter: drop-shadow(0 0 25px rgba(13, 202, 240, 0.8)); }
+}
+
+@keyframes support-wave {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+    50% { transform: translateY(-12px) scale(1.05); opacity: 1; }
+}
+
+.telemedicine-background {
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 25%, #80deea 50%, #4dd0e1 75%, #26c6da 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.telemedicine-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g opacity="0.12"><circle cx="30" cy="25" r="2" fill="%2317a2b8"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="70" cy="55" r="3" fill="%230dcaf0"><animate attributeName="r" values="3;5;3" dur="4s" repeatCount="indefinite"/></circle><rect x="20" y="60" width="6" height="8" rx="2" fill="%2326c6da" opacity="0.3"><animate attributeName="height" values="8;12;8" dur="2s" repeatCount="indefinite"/></rect></g></svg>') repeat;
+    background-size: 160px 160px;
+    animation: float-support 9s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes float-support {
+    0% { background-position: 0 0; }
+    100% { background-position: 160px 160px; }
+}
+
+.video-icon-large {
+    font-size: 6rem;
+    animation: video-pulse 2.8s infinite;
+}
+
+.telemedicine-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 3px solid #17a2b8;
+    border-radius: 22px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.telemedicine-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(23, 162, 184, 0.1), transparent);
+    animation: shimmer-teal 3.5s linear infinite;
+}
+
+@keyframes shimmer-teal {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.telemedicine-card:hover {
+    transform: translateY(-7px) scale(1.02);
+    box-shadow: 0 18px 35px rgba(23, 162, 184, 0.3);
+}
+
+.floating-telemedicine-icons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.floating-telemedicine-icon {
+    position: absolute;
+    animation: support-wave 3.5s ease-in-out infinite;
+}
+
+.telemedicine-icon-1 { top: 18%; left: 6%; font-size: 2.4rem; color: rgba(23, 162, 184, 0.4); animation-delay: 0s; }
+.telemedicine-icon-2 { top: 72%; left: 4%; font-size: 2rem; color: rgba(13, 202, 240, 0.4); animation-delay: 1s; }
+.telemedicine-icon-3 { top: 22%; right: 9%; font-size: 2.6rem; color: rgba(38, 198, 218, 0.4); animation-delay: 2s; }
+.telemedicine-icon-4 { top: 68%; right: 7%; font-size: 2.1rem; color: rgba(23, 162, 184, 0.3); animation-delay: 3s; }
+
+/* AI Chat Styling */
+.message {
+    margin-bottom: 1rem;
+}
+
+.message-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.message-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.user-message .message-avatar {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.bot-message .message-avatar {
+    background-color: #198754;
+    color: white;
+}
+
+.message-text {
+    background: white;
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    max-width: 80%;
+    line-height: 1.4;
+}
+
+.user-message .message-text {
+    background-color: #0d6efd;
+    color: white;
+    margin-left: auto;
+}
+
+.bot-message .message-text {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+/* Typing indicator */
+.typing-indicator {
+    padding-bottom: 1.5rem;
+}
+
+.typing-dots {
+    display: flex;
+    justify-content: flex-start;
+    padding: 0.5rem 0;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #198754;
+    margin-right: 4px;
+    animation: dot-pulse 1.5s infinite ease-in-out;
+}
+
+.dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dot-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 1;
+    }
+}
+
+/* Custom modal styling without backdrop */
+.modal {
+    z-index: 1055;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-dialog {
+    z-index: 1060;
+    margin: 1.75rem auto;
+}
+
+.modal-content {
+    z-index: 1070;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Hide default backdrop */
+.modal-backdrop {
+    display: none !important;
+}
+
+/* Ensure background doesn't interfere */
+.telemedicine-background {
+    position: relative;
+    z-index: 1;
+}
+
+.telemedicine-background::before {
+    z-index: -1 !important;
+}
+
+.floating-telemedicine-icons {
+    z-index: -1 !important;
+}
+
+/* Custom close button styling */
+.modal-header .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: white;
+    opacity: 0.8;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="telemedicine-background">
+    <div class="floating-telemedicine-icons">
+        <i class="fas fa-video floating-telemedicine-icon telemedicine-icon-1"></i>
+        <i class="fas fa-headset floating-telemedicine-icon telemedicine-icon-2"></i>
+        <i class="fas fa-user-md floating-telemedicine-icon telemedicine-icon-3"></i>
+        <i class="fas fa-laptop-medical floating-telemedicine-icon telemedicine-icon-4"></i>
+    </div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5 animate-fade-in position-relative">
+                <i class="fas fa-video video-icon-large text-info mb-4"></i>
+                <h1 class="display-4 fw-bold text-info">
+                    📹 Telemedicine & Support
+                </h1>
+                <p class="lead text-dark animate-slide-up" style="animation-delay: 0.3s; font-weight: 600;">Connect with healthcare professionals and get instant AI-powered support</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Support Options -->
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-headset me-2"></i>Instant Support
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-outline-primary" onclick="openAIHealthSupport()">
+                            <i class="fas fa-robot me-2"></i>AI Health Assistant
+                        </button>
+                        <button class="btn btn-outline-success" onclick="startEmergencyChat()">
+                            <i class="fas fa-ambulance me-2"></i>Emergency Support
+                        </button>
+                        <button class="btn btn-outline-info" onclick="scheduleConsultation()">
+                            <i class="fas fa-calendar-plus me-2"></i>Schedule Consultation
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="openFacilityFinder()">
+                            <i class="fas fa-map-marker-alt me-2"></i>Find Nearby Providers
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session History -->
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0" id="sessionHistory">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Your Sessions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if telemedicine_sessions %}
+                        {% for session in telemedicine_sessions %}
+                        <div class="card mb-3 border-start border-4 border-{{ 'success' if session.status == 'completed' else 'primary' if session.status == 'active' else 'warning' }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title">{{ session.session_type.title() }} Session</h6>
+                                        {% if session.provider_name %}
+                                        <p class="text-muted small mb-1">Provider: {{ session.provider_name }}</p>
+                                        {% endif %}
+                                        <p class="text-muted small">{{ session.session_notes[:100] }}...</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ 'success' if session.status == 'completed' else 'primary' if session.status == 'active' else 'warning' }}">
+                                            {{ session.status.title() }}
+                                        </span>
+                                        <div class="small text-muted mt-1">
+                                            {{ session.created_at if session.created_at else 'No date available' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No sessions yet</h5>
+                            <p class="text-muted">Start with our AI assistant or schedule a consultation</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Facility Finder Modal -->
+    <div class="modal fade" id="facilityFinderModal" tabindex="-1" aria-labelledby="facilityFinderModalLabel" aria-hidden="true" data-bs-backdrop="false">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="facilityFinderModalLabel">
+                        <i class="fas fa-hospital me-2"></i>Medical Facility Finder
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="container-fluid h-100">
+                        <div class="row h-100">
+                            <!-- Control Panel -->
+                            <div class="col-md-4 col-lg-3 p-3 bg-light border-end">
+                                <div class="d-flex flex-column h-100">
+                                    <!-- Location Controls -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold mb-3">
+                                            <i class="fas fa-location-arrow text-primary me-2"></i>Location
+                                        </h6>
+                                        
+                                        <!-- Auto Location Button -->
+                                        <button id="find-location-btn" class="btn btn-outline-primary w-100 mb-2">
+                                            <i class="fas fa-crosshairs me-2"></i>Find My Location
+                                        </button>
+                                        
+                                        <!-- Manual Location Input -->
+                                        <div class="mb-2">
+                                            <div class="input-group">
+                                                <input type="text" id="manual-location-input" class="form-control" 
+                                                       placeholder="Enter hospital name, address, or city" 
+                                                       autocomplete="address-line1">
+                                                <button id="search-location-btn" class="btn btn-outline-secondary" type="button">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                            <small class="form-text text-muted">e.g., "123 Main St, New York, NY" or "10001"</small>
+                                        </div>
+                                        
+                                        <div id="location-status" class="alert alert-info d-none" role="alert">
+                                            <small id="location-text">Click to find your location or enter address manually</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Search Controls -->
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold mb-3">
+                                            <i class="fas fa-search text-primary me-2"></i>Search Settings
+                                        </h6>
+                                        
+                                        <!-- Facility Type Filter -->
+                                        <div class="mb-3">
+                                            <label for="facility-type-select" class="form-label">Facility Type</label>
+                                            <select id="facility-type-select" class="form-select">
+                                                <option value="all">All Medical Facilities</option>
+                                                <option value="hospital">Hospitals</option>
+                                                <option value="clinic">Clinics</option>
+                                                <option value="urgent_care">Urgent Care</option>
+                                                <option value="pharmacy">Pharmacies</option>
+                                                <option value="mental_health">Mental Health Centers</option>
+                                                <option value="dentist">Dental Clinics</option>
+                                                <option value="specialist">Specialist Centers</option>
+                                                <option value="emergency">Emergency Rooms</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="radius-select" class="form-label">Search Radius</label>
+                                            <select id="radius-select" class="form-select">
+                                                <option value="1000">1 km</option>
+                                                <option value="2000">2 km</option>
+                                                <option value="5000" selected>5 km</option>
+                                                <option value="10000">10 km</option>
+                                                <option value="25000">25 km</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <button id="search-facilities-btn" class="btn btn-primary w-100" disabled>
+                                            <i class="fas fa-search me-2"></i>Search Facilities
+                                        </button>
+                                    </div>
+
+                                    <!-- Loading Spinner -->
+                                    <div class="loading-spinner text-center mb-4" style="display: none;">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Searching for facilities...</p>
+                                    </div>
+
+                                    <!-- Results Count -->
+                                    <div id="facility-count" class="mb-3" style="display: none;">
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-hospital me-2"></i>
+                                            <span id="count-text">0 facilities found</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hospital Search Filter -->
+                                    <div id="hospital-search-section" style="display: none;" class="mb-3">
+                                        <label for="hospital-search-input" class="form-label small fw-bold">
+                                            <i class="fas fa-filter text-primary me-1"></i>Filter Hospitals
+                                        </label>
+                                        <input type="text" id="hospital-search-input" class="form-control form-control-sm" 
+                                               placeholder="Search by hospital name..." 
+                                               onkeyup="filterHospitals(this.value)">
+                                    </div>
+
+                                    <!-- Facilities List -->
+                                    <div class="flex-grow-1 overflow-auto">
+                                        <div id="facilities-container" class="row g-2">
+                                            <!-- Facilities will be loaded here -->
+                                        </div>
+                                        
+                                        <!-- Pagination Controls -->
+                                        <div id="pagination-section" style="display: none;" class="mt-3">
+                                            <nav aria-label="Facilities pagination">
+                                                <ul class="pagination pagination-sm justify-content-center">
+                                                    <li class="page-item" id="prev-page">
+                                                        <a class="page-link" href="#" onclick="changePage(-1)">
+                                                            <i class="fas fa-chevron-left"></i> Previous
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item active" id="current-page">
+                                                        <span class="page-link" id="page-info">Page 1 of 1</span>
+                                                    </li>
+                                                    <li class="page-item" id="next-page">
+                                                        <a class="page-link" href="#" onclick="changePage(1)">
+                                                            Next <i class="fas fa-chevron-right"></i>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Map Container -->
+                            <div class="col-md-8 col-lg-9 p-0">
+                                <div id="map" style="height: 80vh; min-height: 500px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facility Details Modal -->
+    <div class="modal fade" id="facilityModal" tabindex="-1" aria-labelledby="facilityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="facilityModalLabel">Facility Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="facility-details-content">
+                        <!-- Details will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Support Modal -->
+    <div class="modal fade" id="emergencyModal" tabindex="-1" aria-labelledby="emergencyModalLabel" aria-hidden="true" data-bs-backdrop="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="emergencyModalLabel">
+                        <i class="fas fa-ambulance me-2"></i>Emergency Support
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="resetEmergencyModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="emergencyForm">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> If this is a life-threatening emergency, please call 108 immediately.
+                        </div>
+                        
+                        <form>
+                            <div class="mb-3">
+                                <label for="urgencyLevel" class="form-label">Urgency Level</label>
+                                <select class="form-select" id="urgencyLevel" required>
+                                    <option value="moderate">Moderate - Need medical advice</option>
+                                    <option value="urgent">Urgent - Serious symptoms</option>
+                                    <option value="critical">Critical - Life-threatening emergency</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="emergencySymptoms" class="form-label">Describe your symptoms or situation</label>
+                                <textarea class="form-control" id="emergencySymptoms" rows="4" placeholder="Please describe what you're experiencing..." required></textarea>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-danger btn-lg" id="emergencySubmitBtn" onclick="handleEmergencySubmit()">
+                                    <i class="fas fa-ambulance me-2"></i>Get Emergency Support
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div id="emergencyResponse" style="display: none;">
+                        <div id="emergencyResponseContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Consultation Modal -->
+    <div class="modal fade" id="consultationModal" tabindex="-1" aria-labelledby="consultationModalLabel" aria-hidden="true" data-bs-backdrop="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="consultationModalLabel">
+                        <i class="fas fa-calendar-plus me-2"></i>Schedule Consultation
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="resetConsultationModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="consultationFormContainer">
+                        <form id="consultationForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="consultation_type" class="form-label">Consultation Type</label>
+                                    <select class="form-select" name="consultation_type" id="consultation_type" required>
+                                        <option value="">Select consultation type</option>
+                                        <option value="general">General Health Consultation</option>
+                                        <option value="follow-up">Follow-up Appointment</option>
+                                        <option value="mental-health">Mental Health Consultation</option>
+                                        <option value="specialist">Specialist Referral</option>
+                                        <option value="prescription">Prescription Review</option>
+                                        <option value="preventive">Preventive Care</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="consultation_date" class="form-label">Preferred Date</label>
+                                    <input type="date" class="form-control" name="consultation_date" id="consultation_date" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="consultation_time" class="form-label">Preferred Time</label>
+                                <select class="form-select" name="consultation_time" id="consultation_time" required>
+                                    <option value="">Select preferred time</option>
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="17:00">5:00 PM</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="consultation_notes" class="form-label">Additional Notes (Optional)</label>
+                                <textarea class="form-control" name="consultation_notes" id="consultation_notes" rows="3" placeholder="Any specific concerns or information you'd like to share..."></textarea>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                You will receive a confirmation email within 24 hours with your appointment details and joining instructions.
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary btn-lg" id="consultationSubmitBtn" onclick="handleConsultationSubmit()">
+                                    <i class="fas fa-calendar-plus me-2"></i>Schedule Consultation
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div id="consultationSuccess" style="display: none;">
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h4>Consultation Scheduled Successfully!</h4>
+                            <p class="mb-3">Your consultation has been scheduled. You will receive a confirmation email within 24 hours with detailed instructions.</p>
+                            <button class="btn btn-success" data-bs-dismiss="modal">
+                                <i class="fas fa-check me-2"></i>Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Health Support Modal -->
+    <div class="modal fade" id="aiHealthSupportModal" tabindex="-1" aria-labelledby="aiHealthSupportModalLabel" aria-hidden="true" data-bs-backdrop="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="aiHealthSupportModalLabel">
+                        <i class="fas fa-robot me-2"></i>AI Health Assistant
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="resetAIHealthSupport()"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="ai-chat-container">
+                        <div id="ai-chat-messages" class="chat-messages mb-3" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem; background-color: #f8f9fa;">
+                            <div class="message bot-message">
+                                <div class="message-content">
+                                    <div class="message-avatar">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <div class="message-text">
+                                        <strong>Hello! I'm your AI Medical Assistant.</strong><br><br>
+                                        I can help you with:
+                                        <ul class="mt-2 mb-2">
+                                            <li>Understanding health symptoms and conditions</li>
+                                            <li>General health guidance and wellness tips</li>
+                                            <li>Explaining medical terms and procedures</li>
+                                            <li>Advising when to seek professional care</li>
+                                        </ul>
+                                        <em>What health question can I help you with today?</em>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input">
+                            <form id="ai-chat-form" class="d-flex gap-2">
+                                <input type="text" id="ai-user-input" class="form-control" placeholder="Ask about your health..." required>
+                                <button type="submit" class="btn btn-primary" id="ai-send-button">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Medical Disclaimer:</strong> This AI provides general health information and should not replace professional medical advice. Always consult healthcare professionals for medical concerns.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Resources -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-lg border-0 border-top border-4 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Emergency Resources
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-phone fa-2x text-danger"></i>
+                            </div>
+                            <h6>Emergency Services</h6>
+                            <p class="text-muted small">Call 108 for immediate medical emergencies</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-life-ring fa-2x text-warning"></i>
+                            </div>
+                            <h6>Crisis Hotline</h6>
+                            <p class="text-muted small">112 - Crisis Support</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-comments fa-2x text-info"></i>
+                            </div>
+                            <h6>Suicide Crisis Line</h6>
+                            <p class="text-muted small">9152987821</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-hospital fa-2x text-success"></i>
+                            </div>
+                            <h6>Poison Control</h6>
+                            <p class="text-muted small">1800-425-1213</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Provider Network -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-network-wired me-2"></i>Healthcare Provider Network
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-4 text-center">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-user-md fa-3x text-primary mb-3"></i>
+                                    <h6>Primary Care</h6>
+                                    <p class="small text-muted">General health consultations and routine checkups</p>
+                                    <button class="btn btn-primary btn-sm">Find Providers</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-brain fa-3x text-success mb-3"></i>
+                                    <h6>Mental Health</h6>
+                                    <p class="small text-muted">Therapy, counseling, and psychiatric services</p>
+                                    <button class="btn btn-success btn-sm">Find Therapists</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="card border-0 bg-light h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-stethoscope fa-3x text-warning mb-3"></i>
+                                    <h6>Specialists</h6>
+                                    <p class="small text-muted">Cardiology, oncology, endocrinology, and more</p>
+                                    <button class="btn btn-warning btn-sm">Find Specialists</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- No API key needed for OpenStreetMap -->
+
+<!-- Map functionality -->
+<script src="{{ url_for('static', filename='map.js') }}"></script>
+
+<script>
+// Emergency Support Modal
+function startEmergencyChat() {
+    const emergencyModal = new bootstrap.Modal(document.getElementById('emergencyModal'), {
+        backdrop: false,
+        keyboard: true
+    });
+    emergencyModal.show();
+}
+
+// Schedule Consultation Modal
+function scheduleConsultation() {
+    const consultationModal = new bootstrap.Modal(document.getElementById('consultationModal'), {
+        backdrop: false,
+        keyboard: true
+    });
+    consultationModal.show();
+}
+
+// Open Facility Finder Modal
+function openFacilityFinder() {
+    console.log('Opening facility finder...');
+    const facilityModal = new bootstrap.Modal(document.getElementById('facilityFinderModal'), {
+        backdrop: false,
+        keyboard: true
+    });
+    facilityModal.show();
+}
+
+// Handle emergency chat form
+function handleEmergencySubmit() {
+    const urgencyLevel = document.getElementById('urgencyLevel').value;
+    const symptoms = document.getElementById('emergencySymptoms').value.trim();
+    
+    if (!symptoms) {
+        alert('Please describe your symptoms or situation.');
+        return;
+    }
+    
+    // Show processing state
+    const submitBtn = document.getElementById('emergencySubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connecting...';
+    
+    // Simulate emergency response setup
+    setTimeout(() => {
+        document.getElementById('emergencyForm').style.display = 'none';
+        document.getElementById('emergencyResponse').style.display = 'block';
+        
+        const responseContent = document.getElementById('emergencyResponseContent');
+        
+        if (urgencyLevel === 'critical') {
+            responseContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Critical Emergency Detected</h5>
+                    <p class="mb-3">Based on your symptoms, this appears to be a medical emergency.</p>
+                    <div class="d-grid gap-2">
+                        <a href="tel:108" class="btn btn-danger btn-lg">
+                            <i class="fas fa-phone me-2"></i>Call 108 Now
+                        </a>
+                        <button class="btn btn-outline-primary" onclick="connectToEmergencySupport()">
+                            <i class="fas fa-comments me-2"></i>Connect to Emergency Support Chat
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            responseContent.innerHTML = `
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-user-md me-2"></i>Emergency Support Available</h5>
+                    <p class="mb-3">We're connecting you with emergency support. If this is life-threatening, please call 108.</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-lg" onclick="connectToEmergencySupport()">
+                            <i class="fas fa-comments me-2"></i>Start Emergency Chat
+                        </button>
+                        <a href="tel:108" class="btn btn-outline-danger">
+                            <i class="fas fa-phone me-2"></i>Call 108 if Critical
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add emergency resources
+        responseContent.innerHTML += `
+            <div class="mt-4">
+                <h6>Emergency Resources:</h6>
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <div class="card border-danger">
+                            <div class="card-body text-center p-2">
+                                <i class="fas fa-phone text-danger"></i>
+                                <small class="d-block">Emergency: 108</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-warning">
+                            <div class="card-body text-center p-2">
+                                <i class="fas fa-life-ring text-warning"></i>
+                                <small class="d-block">Crisis: 112</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-info">
+                            <div class="card-body text-center p-2">
+                                <i class="fas fa-comments text-info"></i>
+                                <small class="d-block">Suicide: 9152987821</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-success">
+                            <div class="card-body text-center p-2">
+                                <i class="fas fa-hospital text-success"></i>
+                                <small class="d-block">Poison: 1800-425-1213</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }, 1500);
+}
+
+// Handle consultation scheduling
+function handleConsultationSubmit() {
+    const form = document.getElementById('consultationForm');
+    const formData = new FormData(form);
+    
+    const submitBtn = document.getElementById('consultationSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Scheduling...';
+    
+    fetch('/schedule_consultation', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('consultationFormContainer').style.display = 'none';
+            document.getElementById('consultationSuccess').style.display = 'block';
+            
+            // Update session history
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to schedule consultation'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error scheduling consultation. Please try again.');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Schedule Consultation';
+    });
+}
+
+// Connect to emergency support chat
+function connectToEmergencySupport() {
+    document.getElementById('emergencyResponse').innerHTML = `
+        <div class="alert alert-success">
+            <h5><i class="fas fa-check-circle me-2"></i>Connected to Emergency Support</h5>
+            <p>You are now connected to our emergency support team. A healthcare professional will assist you shortly.</p>
+            <div class="mt-3 p-3 bg-light rounded">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                        <i class="fas fa-user-md text-white small"></i>
+                    </div>
+                    <strong>Emergency Support Team</strong>
+                    <span class="badge bg-success ms-2">Online</span>
+                </div>
+                <p class="mb-1 small">Hello! I'm here to help you with your emergency. Can you provide more details about your current situation?</p>
+                <div class="mt-2">
+                    <input type="text" class="form-control form-control-sm" placeholder="Type your response here..." disabled>
+                    <small class="text-muted">Emergency chat simulation - In a real implementation, this would connect to live support.</small>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Reset emergency modal
+function resetEmergencyModal() {
+    document.getElementById('emergencyForm').style.display = 'block';
+    document.getElementById('emergencyResponse').style.display = 'none';
+    document.getElementById('emergencySymptoms').value = '';
+    document.getElementById('urgencyLevel').value = 'moderate';
+    
+    const submitBtn = document.getElementById('emergencySubmitBtn');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-ambulance me-2"></i>Get Emergency Support';
+}
+
+// Reset consultation modal
+function resetConsultationModal() {
+    document.getElementById('consultationFormContainer').style.display = 'block';
+    document.getElementById('consultationSuccess').style.display = 'none';
+    document.getElementById('consultationForm').reset();
+    
+    const submitBtn = document.getElementById('consultationSubmitBtn');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-calendar-plus me-2"></i>Schedule Consultation';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('IllnessInsight initialized successfully');
+    
+    // Set minimum date to today for consultation scheduling
+    const dateInput = document.getElementById('consultation_date');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+    }
+    
+    // Ensure proper layering for interactive elements
+    const interactiveElements = document.querySelectorAll('button, .btn, a, input, select, textarea');
+    interactiveElements.forEach(element => {
+        element.style.position = 'relative';
+        element.style.zIndex = '10';
+    });
+    
+    // Map initialization is handled in map.js
+});
+
+// Open AI Health Support Modal
+function openAIHealthSupport() {
+    const modal = new bootstrap.Modal(document.getElementById('aiHealthSupportModal'));
+    modal.show();
+}
+
+// Reset AI Health Support Modal
+function resetAIHealthSupport() {
+    // Clear chat messages except initial bot message
+    const chatMessages = document.getElementById('ai-chat-messages');
+    const initialMessage = chatMessages.querySelector('.message.bot-message');
+    chatMessages.innerHTML = '';
+    if (initialMessage) {
+        chatMessages.appendChild(initialMessage.cloneNode(true));
+    }
+    
+    // Clear input
+    document.getElementById('ai-user-input').value = '';
+    
+    // Reset button
+    const sendButton = document.getElementById('ai-send-button');
+    sendButton.disabled = false;
+    sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+}
+
+// AI Health Support Chat Functionality
+let aiChatHistory = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    const aiChatMessages = document.getElementById('ai-chat-messages');
+    const aiChatForm = document.getElementById('ai-chat-form');
+    const aiUserInput = document.getElementById('ai-user-input');
+    const aiSendButton = document.getElementById('ai-send-button');
+    
+    // Handle AI chat form submission
+    if (aiChatForm) {
+        aiChatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = aiUserInput.value.trim();
+            if (message.length === 0) return;
+            
+            // Add user message to chat
+            addAIMessage(message, true);
+            
+            // Clear input
+            aiUserInput.value = '';
+            
+            // Get AI response
+            getAIHealthResponse(message);
+        });
+    }
+    
+    /**
+     * Add a message to the AI chat
+     */
+    function addAIMessage(text, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-avatar">
+                    <i class="fas fa-${isUser ? 'user' : 'robot'}"></i>
+                </div>
+                <div class="message-text">
+                    ${convertMarkdownToHtml(text)}
+                </div>
+            </div>
+        `;
+        
+        aiChatMessages.appendChild(messageDiv);
+        
+        // Apply fade-in animation
+        messageDiv.style.opacity = '0';
+        messageDiv.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            messageDiv.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            messageDiv.style.opacity = '1';
+            messageDiv.style.transform = 'translateY(0)';
+        }, 10);
+        
+        // Scroll to bottom
+        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        
+        // Update chat history
+        if (isUser) {
+            aiChatHistory.push({ role: 'user', content: text });
+        } else {
+            aiChatHistory.push({ role: 'assistant', content: text });
+        }
+    }
+    
+    /**
+     * Get response from the AI for health questions
+     */
+    function getAIHealthResponse(message) {
+        showAITypingIndicator();
+        
+        fetch('/chat_with_bot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                history: aiChatHistory
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            removeAITypingIndicator();
+            
+            if (data.success) {
+                addAIMessage(data.response);
+                
+                if (data.history) {
+                    aiChatHistory = data.history;
+                }
+            } else {
+                addAIMessage('I apologize, but I encountered an error. Please try again or consult with a healthcare professional for immediate concerns.');
+                console.error('Error:', data.error);
+            }
+        })
+        .catch(error => {
+            removeAITypingIndicator();
+            addAIMessage('I apologize, but I encountered a connection error. Please try again or consult with a healthcare professional for immediate concerns.');
+            console.error('Error:', error);
+        });
+    }
+    
+    /**
+     * Show typing indicator in AI chat
+     */
+    function showAITypingIndicator() {
+        aiSendButton.disabled = true;
+        aiSendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot-message typing-indicator';
+        typingDiv.id = 'ai-typing-indicator';
+        
+        const dotContainer = document.createElement('div');
+        dotContainer.className = 'typing-dots';
+        
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'dot';
+            dotContainer.appendChild(dot);
+        }
+        
+        typingDiv.appendChild(dotContainer);
+        aiChatMessages.appendChild(typingDiv);
+        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+    }
+    
+    /**
+     * Remove typing indicator from AI chat
+     */
+    function removeAITypingIndicator() {
+        aiSendButton.disabled = false;
+        aiSendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        
+        const typingIndicator = document.getElementById('ai-typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+    
+    /**
+     * Convert markdown to HTML
+     */
+    function convertMarkdownToHtml(text) {
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        text = text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+        text = text.replace(/^\s*-\s+(.*?)$/gm, '<li>$1</li>');
+        text = text.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+        text = text.replace(/^# (.*?)$/gm, '<h4>$1</h4>');
+        text = text.replace(/^## (.*?)$/gm, '<h5>$1</h5>');
+        text = text.replace(/\n/g, '<br>');
+        return text;
+    }
+});
+</script>
+
+{% endblock %}

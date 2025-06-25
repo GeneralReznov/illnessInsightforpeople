@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Sleep Insights - IllnessInsight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5 animate-fade-in">
+                <h1 class="display-5 fw-bold text-primary">
+                    <i class="fas fa-chart-line me-3"></i>Your Sleep Analysis
+                </h1>
+                <p class="lead text-muted">AI-powered insights from your sleep data</p>
+            </div>
+
+            <!-- Sleep Score Card -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bed me-2"></i>Sleep Score
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="display-4 fw-bold text-primary">{{ sleep_data.wellness_score }}/100</div>
+                            <p class="text-muted">Overall Wellness Score</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="h5 text-info">{{ sleep_data.sleep_duration }}h</div>
+                                    <small class="text-muted">Duration</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="h5 text-success">{{ sleep_data.sleep_quality }}/10</div>
+                                    <small class="text-muted">Quality</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Metrics -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-analytics me-2"></i>Sleep Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6>Fatigue Level</h6>
+                            <div class="progress mb-2" style="height: 12px;">
+                                <div class="progress-bar bg-warning" style="width: {{ (sleep_data.fatigue_level / 10 * 100) }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ sleep_data.fatigue_level }}/10 (Lower is better)</small>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Alertness Level</h6>
+                            <div class="progress mb-2" style="height: 12px;">
+                                <div class="progress-bar bg-success" style="width: {{ (sleep_data.alertness_level / 10 * 100) }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ sleep_data.alertness_level }}/10 (Higher is better)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>AI Insights & Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for insight in insights %}
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2 mt-1"></i>
+                        <p class="mb-0">{{ insight }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Sleep Notes -->
+            {% if sleep_data.notes %}
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>Your Notes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ sleep_data.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('sleep_wellness') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-2"></i>Log Another Night
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('health_quests') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-trophy me-2"></i>Start Sleep Quest
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

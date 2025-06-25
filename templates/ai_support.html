@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}AI Health Support - IllnessInsight{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5 animate-fade-in">
+                <h1 class="display-5 fw-bold text-success">
+                    <i class="fas fa-user-md me-3"></i>AI Health Support
+                </h1>
+                <p class="lead text-muted">Get instant medical guidance and health information</p>
+            </div>
+
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stethoscope me-2"></i>Medical AI Assistant
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chat-container" style="height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem; background-color: #f8f9fa;">
+                        <div class="chat-message ai-message mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; flex-shrink: 0;">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="message-content bg-white p-3 rounded shadow-sm">
+                                    <p class="mb-0">Hello! I'm your AI Medical Assistant. I can help you with:</p>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Understanding your health assessment results</li>
+                                        <li>Explaining medical terms and conditions</li>
+                                        <li>Providing general health guidance</li>
+                                        <li>Suggesting when to seek professional care</li>
+                                    </ul>
+                                    <p class="small text-muted mt-2 mb-0">What would you like to know about your health?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input mt-3">
+                        <form id="supportChatForm">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="supportMessage" placeholder="Ask about your health results, symptoms, or general health questions..." required>
+                                <button class="btn btn-success" type="submit">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mt-4 g-3">
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <i class="fas fa-question-circle fa-2x text-primary mb-2"></i>
+                            <h6>Quick Questions</h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="askQuickQuestion('What do my test results mean?')">Explain My Results</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="askQuickQuestion('When should I see a doctor?')">When to See Doctor?</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="askQuickQuestion('How can I improve my health?')">Health Improvement Tips</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                            <h6>Emergency Guidance</h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-danger btn-sm" onclick="showEmergencyInfo()">Emergency Symptoms</button>
+                                <button class="btn btn-outline-warning btn-sm" onclick="showUrgentCare()">Urgent Care Guide</button>
+                                <button class="btn btn-outline-info btn-sm" onclick="showPrevention()">Prevention Tips</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="alert alert-warning mt-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Medical Disclaimer:</strong> This AI assistant provides general health information and should not replace professional medical advice, diagnosis, or treatment. Always consult with healthcare professionals for medical concerns.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('supportChatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('supportMessage');
+    const message = messageInput.value.trim();
+    
+    if (message) {
+        addMessageToChat(message, 'user');
+        messageInput.value = '';
+        
+        // Send to AI (using existing chat endpoint)
+        fetch('/chat/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                addMessageToChat(data.response, 'ai');
+            } else {
+                addMessageToChat('Sorry, I encountered an error. Please try again.', 'ai');
+            }
+        })
+        .catch(error => {
+            addMessageToChat('Connection error. Please check your internet and try again.', 'ai');
+        });
+    }
+});
+
+function addMessageToChat(message, sender) {
+    const chatContainer = document.querySelector('.chat-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}-message mb-3`;
+    
+    if (sender === 'user') {
+        messageDiv.innerHTML = `
+            <div class="d-flex align-items-start justify-content-end">
+                <div class="message-content bg-primary text-white p-3 rounded shadow-sm me-2" style="max-width: 70%;">
+                    <p class="mb-0">${message}</p>
+                </div>
+                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        `;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="d-flex align-items-start">
+                <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; flex-shrink: 0;">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content bg-white p-3 rounded shadow-sm" style="max-width: 70%;">
+                    <p class="mb-0">${message}</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function askQuickQuestion(question) {
+    document.getElementById('supportMessage').value = question;
+    document.getElementById('supportChatForm').dispatchEvent(new Event('submit'));
+}
+
+function showEmergencyInfo() {
+    const emergencyMessage = "🚨 Call 911 immediately if you experience: Chest pain, difficulty breathing, severe bleeding, loss of consciousness, stroke symptoms (F.A.S.T.), or severe allergic reactions.";
+    addMessageToChat(emergencyMessage, 'ai');
+}
+
+function showUrgentCare() {
+    const urgentMessage = "⚡ Seek urgent care for: High fever, persistent vomiting, severe pain, cuts that may need stitches, sprains, or concerning symptoms that aren't life-threatening but need prompt attention.";
+    addMessageToChat(urgentMessage, 'ai');
+}
+
+function showPrevention() {
+    const preventionMessage = "🛡️ Key prevention tips: Regular checkups, healthy diet, exercise, adequate sleep, stress management, hand hygiene, vaccinations, and avoiding tobacco/excessive alcohol.";
+    addMessageToChat(preventionMessage, 'ai');
+}
+</script>
+{% endblock %}

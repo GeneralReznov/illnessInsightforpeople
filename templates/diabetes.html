@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Diabetes Prediction - IllnessInsight{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Diabetes-specific animations and styling */
+@keyframes glucose-pulse {
+    0%, 100% { 
+        transform: scale(1); 
+        color: #ffc107; 
+        filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.5));
+    }
+    50% { 
+        transform: scale(1.2); 
+        color: #ff8c00; 
+        filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.8));
+    }
+}
+
+@keyframes blood-drop {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+    25% { transform: translateY(-15px) scale(1.1); opacity: 1; }
+    50% { transform: translateY(-25px) scale(0.9); opacity: 0.8; }
+    75% { transform: translateY(-10px) scale(1.05); opacity: 0.9; }
+}
+
+@keyframes insulin-wave {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100vw); }
+}
+
+.diabetes-page-background {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 30%, #ffe082 70%, #ffd54f 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.diabetes-page-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g opacity="0.15"><circle cx="20" cy="30" r="3" fill="%23ffc107"><animate attributeName="r" values="3;6;3" dur="3s" repeatCount="indefinite"/></circle><circle cx="70" cy="60" r="2" fill="%23ff8c00"><animate attributeName="r" values="2;5;2" dur="2s" repeatCount="indefinite"/></circle><circle cx="40" cy="80" r="4" fill="%23ffb300"><animate attributeName="r" values="4;7;4" dur="4s" repeatCount="indefinite"/></circle></g></svg>') repeat;
+    background-size: 200px 200px;
+    animation: float-particles 10s linear infinite;
+}
+
+@keyframes float-particles {
+    0% { background-position: 0 0; }
+    100% { background-position: 200px 200px; }
+}
+
+.diabetes-icon-large {
+    font-size: 8rem;
+    animation: glucose-pulse 2s infinite;
+    filter: drop-shadow(0 0 25px rgba(255, 193, 7, 0.6));
+}
+
+.diabetes-form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 3px solid #ffc107;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(255, 193, 7, 0.2);
+}
+
+.diabetes-form-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 193, 7, 0.1), transparent);
+    animation: shimmer-gold 4s linear infinite;
+}
+
+@keyframes shimmer-gold {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.diabetes-input {
+    border: 2px solid #ffe082 !important;
+    border-radius: 15px !important;
+    transition: all 0.3s ease;
+}
+
+.diabetes-input:focus {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25) !important;
+    animation: pulse-input-diabetes 0.3s ease-out;
+    transform: scale(1.02);
+}
+
+@keyframes pulse-input-diabetes {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1.02); }
+}
+
+.diabetes-submit-btn {
+    background: linear-gradient(135deg, #ffc107, #ff8c00) !important;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    animation: pulse-diabetes 3s infinite;
+    box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
+}
+
+@keyframes pulse-diabetes {
+    0%, 100% { 
+        box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
+        background: linear-gradient(135deg, #ffc107, #ff8c00);
+    }
+    50% { 
+        box-shadow: 0 15px 40px rgba(255, 140, 0, 0.5);
+        background: linear-gradient(135deg, #ff8c00, #ffa000);
+    }
+}
+
+.diabetes-submit-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 20px 50px rgba(255, 193, 7, 0.4);
+}
+
+.floating-diabetes-icons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.floating-diabetes-icon {
+    position: absolute;
+    animation: blood-drop 5s ease-in-out infinite;
+}
+
+.diabetes-icon-1 { top: 15%; left: 8%; font-size: 2.5rem; color: rgba(255, 193, 7, 0.4); animation-delay: 0s; }
+.diabetes-icon-2 { top: 70%; left: 12%; font-size: 2rem; color: rgba(255, 140, 0, 0.4); animation-delay: 1s; }
+.diabetes-icon-3 { top: 25%; right: 10%; font-size: 2.8rem; color: rgba(255, 179, 0, 0.4); animation-delay: 2s; }
+.diabetes-icon-4 { top: 60%; right: 15%; font-size: 2.2rem; color: rgba(255, 160, 0, 0.4); animation-delay: 3s; }
+.diabetes-icon-5 { top: 45%; left: 45%; font-size: 1.8rem; color: rgba(255, 193, 7, 0.3); animation-delay: 4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="diabetes-page-background">
+    <div class="floating-diabetes-icons">
+        <i class="fas fa-vial floating-diabetes-icon diabetes-icon-1"></i>
+        <i class="fas fa-tint floating-diabetes-icon diabetes-icon-2"></i>
+        <i class="fas fa-syringe floating-diabetes-icon diabetes-icon-3"></i>
+        <i class="fas fa-heartbeat floating-diabetes-icon diabetes-icon-4"></i>
+        <i class="fas fa-pills floating-diabetes-icon diabetes-icon-5"></i>
+    </div>
+
+<div class="container py-5 diabetes-page-animations">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5 animate-fade-in position-relative">
+                <i class="fas fa-vial diabetes-icon-large text-warning mb-4"></i>
+                <h1 class="display-4 fw-bold text-warning">
+                    🩸 Diabetes Prediction
+                </h1>
+                <p class="lead text-dark animate-slide-up" style="animation-delay: 0.3s; font-weight: 600;">Advanced glucose level analysis and metabolic health assessment</p>
+            </div>
+
+            <div class="card diabetes-form-card shadow-lg animate-slide-up" style="animation-delay: 0.6s;">
+                <div class="card-body p-5">
+                    <form method="POST" action="/diabetes_predict">
+                        <div class="row g-4">
+                            <!-- Column 1 -->
+                            <div class="col-md-4 animate-slide-left" style="animation-delay: 0.9s;">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control diabetes-input" id="pregnancies" name="pregnancies" placeholder="Pregnancies" required min="0" max="20">
+                                    <label for="pregnancies">🤰 Number of Pregnancies</label>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="skin_thickness" name="skin_thickness" placeholder="Skin Thickness" required min="0" max="100">
+                                    <label for="skin_thickness">Skin Thickness (mm)</label>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="dpf" name="dpf" placeholder="Diabetes Pedigree" required min="0" max="5" step="0.001">
+                                    <label for="dpf">Diabetes Pedigree Function</label>
+                                </div>
+                            </div>
+
+                            <!-- Column 2 -->
+                            <div class="col-md-4 animate-slide-up" style="animation-delay: 1.2s;">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="glucose" name="glucose" placeholder="Glucose" required min="0" max="300">
+                                    <label for="glucose">Glucose Level (mg/dl)</label>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="insulin" name="insulin" placeholder="Insulin" required min="0" max="1000">
+                                    <label for="insulin">Insulin Level (mu U/ml)</label>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="age" name="age" placeholder="Age" required min="1" max="120">
+                                    <label for="age">Age</label>
+                                </div>
+                            </div>
+
+                            <!-- Column 3 -->
+                            <div class="col-md-4 animate-slide-right" style="animation-delay: 1.5s;">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="blood_pressure" name="blood_pressure" placeholder="Blood Pressure" required min="0" max="200">
+                                    <label for="blood_pressure">Blood Pressure (mmHg)</label>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="bmi" name="bmi" placeholder="BMI" required min="10" max="70" step="0.1">
+                                    <label for="bmi">BMI (Body Mass Index)</label>
+                                </div>
+                                
+                                <!-- Diabetes Icon -->
+                                <div class="text-center mt-4">
+                                    <i class="fas fa-vial text-warning vial-icon" style="font-size: 5rem; opacity: 0.3;"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4 animate-pulse" style="animation-delay: 1.8s;">
+                            <button type="submit" class="btn diabetes-submit-btn btn-lg px-5">
+                                <i class="fas fa-vial me-2"></i>🔬 Predict Diabetes Risk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Display -->
+            {% if prediction is defined %}
+            <div class="card mt-4 border-0 shadow-lg animate-fade-in">
+                <div class="card-body text-center">
+                    <h3 class="card-title {% if risk_level == 'High' %}text-danger{% else %}text-success{% endif %}">
+                        <i class="fas fa-{% if risk_level == 'High' %}exclamation-triangle{% else %}check-circle{% endif %} me-2"></i>
+                        Prediction Result
+                    </h3>
+                    <p class="lead mb-3">{{ result }}</p>
+                    <div class="alert {% if risk_level == 'High' %}alert-warning{% else %}alert-success{% endif %}" role="alert">
+                        <strong>Risk Level: {{ risk_level }}</strong>
+                    </div>
+                    
+                    {% if recommendations %}
+                    <div class="mt-4">
+                        <h5 class="text-primary">Recommendations:</h5>
+                        <ul class="list-unstyled">
+                            {% for rec in recommendations %}
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>{{ rec }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <a href="/diabetes" class="btn btn-warning mt-3">
+                        <i class="fas fa-redo me-2"></i>Test Again
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="alert alert-danger mt-4" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Info Card -->
+            <div class="card mt-4 border-0 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">
+                        <i class="fas fa-info-circle me-2"></i>About Diabetes Prediction
+                    </h5>
+                    <p class="card-text">
+                        This prediction model analyzes key health indicators including glucose levels, BMI, insulin levels, and family history 
+                        to assess diabetes risk. Early detection enables proactive lifestyle changes and medical intervention.
+                    </p>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6 class="text-warning">Risk Factors:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>High glucose levels</li>
+                                <li><i class="fas fa-check text-success me-2"></i>High BMI</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Family history</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Age and lifestyle</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning">Prevention Tips:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Regular exercise</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Healthy diet</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Weight management</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Regular check-ups</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Sleep & Wellness Tracking - IllnessInsight{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Sleep wellness page styling */
+@keyframes sleep-wave {
+    0%, 100% { transform: scale(1) rotate(0deg); color: #6610f2; }
+    25% { transform: scale(1.1) rotate(-3deg); color: #7c4dff; }
+    50% { transform: scale(1.2) rotate(3deg); color: #9575cd; }
+    75% { transform: scale(1.1) rotate(-2deg); color: #8e24aa; }
+}
+
+@keyframes dream-float {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+    50% { transform: translateY(-20px) scale(1.1); opacity: 1; }
+}
+
+.sleep-page-background {
+    background: linear-gradient(135deg, #f3e5f5 0%, #e8eaf6 25%, #c5cae9 50%, #9fa8da 75%, #7986cb 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.sleep-page-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g opacity="0.1"><circle cx="30" cy="20" r="2" fill="%236610f2"><animate attributeName="r" values="2;4;2" dur="4s" repeatCount="indefinite"/></circle><circle cx="70" cy="50" r="3" fill="%237c4dff"><animate attributeName="r" values="3;5;3" dur="3s" repeatCount="indefinite"/></circle><path d="M20 60 Q40 50 60 60 Q40 70 20 60" stroke="%239575cd" stroke-width="1" fill="none" opacity="0.3"><animate attributeName="d" values="M20 60 Q40 50 60 60 Q40 70 20 60;M20 60 Q40 55 60 60 Q40 65 20 60;M20 60 Q40 50 60 60 Q40 70 20 60" dur="6s" repeatCount="indefinite"/></path></g></svg>') repeat;
+    background-size: 200px 200px;
+    animation: float-dreams 10s linear infinite;
+}
+
+@keyframes float-dreams {
+    0% { background-position: 0 0; }
+    100% { background-position: 200px 200px; }
+}
+
+.sleep-icon-large {
+    font-size: 6rem;
+    animation: sleep-wave 3s infinite;
+    filter: drop-shadow(0 0 20px rgba(102, 16, 242, 0.5));
+}
+
+.sleep-form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 3px solid #6610f2;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(102, 16, 242, 0.2);
+}
+
+.sleep-form-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(102, 16, 242, 0.1), transparent);
+    animation: shimmer-purple 4s linear infinite;
+}
+
+@keyframes shimmer-purple {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.sleep-input {
+    border: 2px solid #e8eaf6 !important;
+    border-radius: 15px !important;
+    transition: all 0.3s ease;
+}
+
+.sleep-input:focus {
+    border-color: #6610f2 !important;
+    box-shadow: 0 0 0 0.25rem rgba(102, 16, 242, 0.25) !important;
+    animation: pulse-input-sleep 0.3s ease-out;
+    transform: scale(1.02);
+}
+
+@keyframes pulse-input-sleep {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1.02); }
+}
+
+.sleep-submit-btn {
+    background: linear-gradient(135deg, #6610f2, #8e24aa) !important;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    animation: pulse-sleep 3s infinite;
+    box-shadow: 0 10px 30px rgba(102, 16, 242, 0.3);
+}
+
+@keyframes pulse-sleep {
+    0%, 100% { 
+        box-shadow: 0 10px 30px rgba(102, 16, 242, 0.3);
+        background: linear-gradient(135deg, #6610f2, #8e24aa);
+    }
+    50% { 
+        box-shadow: 0 15px 40px rgba(142, 36, 170, 0.5);
+        background: linear-gradient(135deg, #8e24aa, #7c4dff);
+    }
+}
+
+.sleep-submit-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 20px 50px rgba(102, 16, 242, 0.4);
+}
+
+.floating-sleep-icons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.floating-sleep-icon {
+    position: absolute;
+    animation: dream-float 4s ease-in-out infinite;
+}
+
+.sleep-icon-1 { top: 10%; left: 8%; font-size: 2.5rem; color: rgba(102, 16, 242, 0.4); animation-delay: 0s; }
+.sleep-icon-2 { top: 70%; left: 5%; font-size: 2rem; color: rgba(124, 77, 255, 0.4); animation-delay: 1s; }
+.sleep-icon-3 { top: 30%; right: 12%; font-size: 2.8rem; color: rgba(149, 117, 205, 0.4); animation-delay: 2s; }
+.sleep-icon-4 { top: 65%; right: 8%; font-size: 2.2rem; color: rgba(142, 36, 170, 0.4); animation-delay: 3s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sleep-page-background">
+    <div class="floating-sleep-icons">
+        <i class="fas fa-bed floating-sleep-icon sleep-icon-1"></i>
+        <i class="fas fa-moon floating-sleep-icon sleep-icon-2"></i>
+        <i class="fas fa-cloud floating-sleep-icon sleep-icon-3"></i>
+        <i class="fas fa-star floating-sleep-icon sleep-icon-4"></i>
+    </div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5 animate-fade-in position-relative">
+                <i class="fas fa-bed sleep-icon-large mb-4" style="color: #6610f2;"></i>
+                <h1 class="display-4 fw-bold" style="color: #6610f2;">
+                    🛏️ Sleep & Wellness Tracking
+                </h1>
+                <p class="lead text-dark animate-slide-up" style="animation-delay: 0.3s; font-weight: 600;">Monitor sleep patterns and wellness with AI-powered insights and analysis</p>
+            </div>
+
+            <div class="card sleep-form-card shadow-lg">
+                <div class="card-body p-5">
+                    <form method="POST" action="{{ url_for('track_sleep_wellness') }}">
+                        <div class="row g-4">
+                            <!-- Sleep Date -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control sleep-input" id="sleep_date" name="sleep_date" required>
+                                    <label for="sleep_date">📅 Sleep Date</label>
+                                </div>
+                            </div>
+
+                            <!-- Sleep Duration -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="sleep_duration" name="sleep_duration" step="0.5" min="0" max="24" required placeholder="7.5">
+                                    <label for="sleep_duration">Sleep Duration (hours)</label>
+                                </div>
+                            </div>
+
+                            <!-- Sleep Quality -->
+                            <div class="col-md-6">
+                                <label for="sleep_quality" class="form-label fw-semibold">Sleep Quality (1-10 scale)</label>
+                                <input type="range" class="form-range" id="sleep_quality" name="sleep_quality" min="1" max="10" value="5" required>
+                                <div class="d-flex justify-content-between">
+                                    <small>Poor (1)</small>
+                                    <small id="sleep_quality_value">5</small>
+                                    <small>Excellent (10)</small>
+                                </div>
+                            </div>
+
+                            <!-- Fatigue Level -->
+                            <div class="col-md-6">
+                                <label for="fatigue_level" class="form-label fw-semibold">Fatigue Level (1-10 scale)</label>
+                                <input type="range" class="form-range" id="fatigue_level" name="fatigue_level" min="1" max="10" value="5" required>
+                                <div class="d-flex justify-content-between">
+                                    <small>No fatigue (1)</small>
+                                    <small id="fatigue_level_value">5</small>
+                                    <small>Extremely fatigued (10)</small>
+                                </div>
+                            </div>
+
+                            <!-- Alertness Level -->
+                            <div class="col-md-6">
+                                <label for="alertness_level" class="form-label fw-semibold">Alertness Level (1-10 scale)</label>
+                                <input type="range" class="form-range" id="alertness_level" name="alertness_level" min="1" max="10" value="5" required>
+                                <div class="d-flex justify-content-between">
+                                    <small>Drowsy (1)</small>
+                                    <small id="alertness_level_value">5</small>
+                                    <small>Very alert (10)</small>
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="notes" name="notes" style="height: 100px" placeholder="Optional notes about your sleep..."></textarea>
+                                    <label for="notes">Sleep Notes (optional)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn sleep-submit-btn btn-lg">
+                                <i class="fas fa-moon me-2"></i>🌙 Track Sleep Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sleep Tips -->
+            <div class="card mt-4 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-lightbulb me-2 text-warning"></i>Sleep Improvement Tips
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Maintain consistent sleep schedule</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Create a relaxing bedtime routine</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Keep bedroom cool and dark</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Limit screen time before bed</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Avoid caffeine late in the day</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Exercise regularly (not before bed)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update range slider values in real-time
+document.getElementById('sleep_quality').addEventListener('input', function() {
+    document.getElementById('sleep_quality_value').textContent = this.value;
+});
+
+document.getElementById('fatigue_level').addEventListener('input', function() {
+    document.getElementById('fatigue_level_value').textContent = this.value;
+});
+
+document.getElementById('alertness_level').addEventListener('input', function() {
+    document.getElementById('alertness_level_value').textContent = this.value;
+});
+</script>
+{% endblock %}

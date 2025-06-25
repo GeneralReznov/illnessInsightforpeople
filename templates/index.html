@@ -1,0 +1,756 @@
+{% extends "base.html" %}
+
+{% block title %}IllnessInsight - AI Health Prediction Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Enhanced Animations */
+@keyframes rainbow {
+    0% { color: #ff6b6b; }
+    16% { color: #4ecdc4; }
+    32% { color: #45b7d1; }
+    48% { color: #96ceb4; }
+    64% { color: #feca57; }
+    80% { color: #ff9ff3; }
+    100% { color: #ff6b6b; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 123, 255, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 123, 255, 0.8); }
+}
+
+@keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); color: #e74c3c; }
+}
+
+@keyframes brain-pulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.05); filter: brightness(1.2); }
+}
+
+@keyframes trophy-shine {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); filter: brightness(1.3); }
+}
+
+@keyframes bounce-in {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes rotate-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-rainbow { animation: rainbow 3s infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s infinite; }
+.animate-wiggle { animation: wiggle 1s ease-in-out infinite; }
+.animate-heartbeat { animation: heartbeat 1.5s infinite; }
+.animate-brain-pulse { animation: brain-pulse 2s infinite; }
+.animate-trophy-shine { animation: trophy-shine 2s infinite; }
+.animate-bounce-in { animation: bounce-in 0.8s ease-out; }
+.animate-slide-up { animation: slide-up 0.8s ease-out; }
+.animate-rotate-slow { animation: rotate-slow 20s linear infinite; }
+
+.hero-section {
+    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 25%, #45b7d1 50%, #96ceb4 75%, #feca57 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="medical" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="2" fill="white" opacity="0.15"/><path d="M20 25h10M25 20v10" stroke="white" stroke-width="1" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23medical)"/></svg>');
+    animation: float 20s infinite;
+}
+
+.hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g opacity="0.1"><circle cx="20" cy="20" r="3" fill="%23ff6b6b"><animate attributeName="r" values="3;5;3" dur="4s" repeatCount="indefinite"/></circle><circle cx="80" cy="30" r="2" fill="%234ecdc4"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="60" cy="70" r="4" fill="%2345b7d1"><animate attributeName="r" values="4;6;4" dur="5s" repeatCount="indefinite"/></circle><circle cx="30" cy="80" r="2" fill="%2396ceb4"><animate attributeName="r" values="2;3;2" dur="3.5s" repeatCount="indefinite"/></circle></g></svg>');
+    pointer-events: none;
+}
+
+.floating-medical-icons {
+    position: relative;
+    height: 500px;
+}
+
+.floating-icon {
+    position: absolute;
+    animation: float 4s ease-in-out infinite;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+}
+
+.floating-icon::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse-ring 3s infinite;
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+.icon-1 { 
+    top: 10%; left: 15%; animation-delay: 0s; 
+    background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+    padding: 20px;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+}
+.icon-2 { 
+    top: 50%; right: 20%; animation-delay: 1s; 
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    padding: 15px;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(78, 205, 196, 0.4);
+}
+.icon-3 { 
+    top: 30%; left: 55%; animation-delay: 2s; 
+    background: linear-gradient(45deg, #45b7d1, #96c93d);
+    padding: 15px;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(69, 183, 209, 0.4);
+}
+.icon-4 { 
+    bottom: 15%; left: 35%; animation-delay: 1.5s; 
+    background: linear-gradient(45deg, #feca57, #ff9ff3);
+    padding: 15px;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(254, 202, 87, 0.4);
+}
+.icon-5 { 
+    top: 70%; left: 10%; animation-delay: 2.5s; 
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    padding: 12px;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(108, 92, 231, 0.4);
+}
+.icon-6 { 
+    top: 15%; right: 40%; animation-delay: 3s; 
+    background: linear-gradient(45deg, #fd79a8, #fdcb6e);
+    padding: 12px;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(253, 121, 168, 0.4);
+}
+
+.feature-card {
+    transition: all 0.3s ease;
+    border: none;
+    overflow: hidden;
+    position: relative;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.feature-card .card-header {
+    background: linear-gradient(45deg, var(--card-color), var(--card-color-light));
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card .card-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: rotate(45deg);
+    transition: all 0.5s;
+    opacity: 0;
+}
+
+.feature-card:hover .card-header::before {
+    animation: shine 0.5s ease-in-out;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; }
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+.stats-counter {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.text-gradient {
+    background: linear-gradient(45deg, #007bff, #28a745, #ffc107, #dc3545);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbow 3s ease-in-out infinite;
+}
+
+.floating-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: float-particle 20s infinite linear;
+}
+
+@keyframes float-particle {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) translateX(100px); opacity: 0; }
+}
+
+/* DNA Helix Animation */
+.dna-helix {
+    position: absolute;
+    right: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100px;
+    height: 300px;
+    opacity: 0.3;
+}
+
+.dna-strand {
+    position: absolute;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+    border-radius: 2px;
+    animation: dna-rotate 8s linear infinite;
+}
+
+.strand-1 {
+    left: 20px;
+    animation-delay: 0s;
+}
+
+.strand-2 {
+    right: 20px;
+    animation-delay: 4s;
+}
+
+@keyframes dna-rotate {
+    0% { transform: rotateY(0deg) translateX(20px); }
+    25% { transform: rotateY(90deg) translateX(0px); }
+    50% { transform: rotateY(180deg) translateX(-20px); }
+    75% { transform: rotateY(270deg) translateX(0px); }
+    100% { transform: rotateY(360deg) translateX(20px); }
+}
+
+/* Medical Pulse Effects */
+@keyframes medical-pulse {
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+    }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+    }
+}
+
+.animate-medical-pulse { animation: medical-pulse 2s infinite; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 6s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 8s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 10s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 12s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 14s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 16s;"></div>
+    </div>
+    
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <div class="hero-content animate-slide-up">
+                    <h1 class="display-4 fw-bold mb-4">
+                        Welcome to <span class="text-gradient">IllnessInsight</span>
+                    </h1>
+                    <p class="lead mb-4 animate-slide-up" style="animation-delay: 0.3s;">
+                        Comprehensive AI-powered health platform with disease prediction, mental health screening, wellness tracking, and personalized care pathways.
+                    </p>
+                    <div class="d-flex gap-3 mb-4 animate-bounce-in" style="animation-delay: 0.6s;">
+                        <a href="#features" class="btn btn-primary btn-lg animate-pulse-glow">
+                            <i class="fas fa-rocket me-2 animate-rotate-slow"></i>Explore Features
+                        </a>
+                        <a href="{{ url_for('chat') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-robot me-2 animate-wiggle"></i>AI Assistant
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-animation position-relative">
+                    <div class="floating-medical-icons">
+                        <div class="floating-icon icon-1">
+                            <i class="fas fa-heartbeat text-white fa-3x animate-heartbeat"></i>
+                        </div>
+                        <div class="floating-icon icon-2">
+                            <i class="fas fa-brain text-white fa-2x animate-brain-pulse"></i>
+                        </div>
+                        <div class="floating-icon icon-3">
+                            <i class="fas fa-bed text-white fa-2x animate-float"></i>
+                        </div>
+                        <div class="floating-icon icon-4">
+                            <i class="fas fa-trophy text-white fa-2x animate-trophy-shine"></i>
+                        </div>
+                        <div class="floating-icon icon-5">
+                            <i class="fas fa-stethoscope text-white fa-2x animate-wiggle"></i>
+                        </div>
+                        <div class="floating-icon icon-6">
+                            <i class="fas fa-pills text-white fa-2x animate-bounce"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Medical DNA Helix Animation -->
+                    <div class="dna-helix">
+                        <div class="dna-strand strand-1"></div>
+                        <div class="dna-strand strand-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold animate-slide-up">
+                <i class="fas fa-star me-3 text-warning animate-trophy-shine"></i>Comprehensive Health Features
+            </h2>
+            <p class="lead text-muted animate-slide-up" style="animation-delay: 0.2s;">
+                Advanced AI-powered tools for complete health management and disease prevention
+            </p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- Disease Prediction Cards -->
+            <div class="col-lg-3 col-md-6 animate-bounce-in" style="animation-delay: 0.1s;">
+                <div class="card feature-card h-100 shadow-lg animate-medical-pulse" style="--card-color: #ff6b6b; --card-color-light: #ff8e8e; background: linear-gradient(135deg, #ff6b6b, #ff8e53); border: 3px solid #ff6b6b;">
+                    <div class="card-header text-white text-center position-relative overflow-hidden">
+                        <div class="medical-bg-pattern"></div>
+                        <i class="fas fa-heartbeat feature-icon animate-heartbeat text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">❤️ Heart Disease</h5>
+                    </div>
+                    <div class="card-body text-center bg-gradient text-white">
+                        <p class="card-text fw-medium">AI-powered cardiovascular risk assessment using advanced machine learning algorithms and real-time health monitoring.</p>
+                        <a href="{{ url_for('heart') }}" class="btn btn-light btn-lg fw-bold animate-pulse-glow">
+                            <i class="fas fa-chart-line me-2 text-danger"></i>Start Assessment
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 animate-bounce-in" style="animation-delay: 0.2s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #feca57, #ff9ff3); border: 3px solid #feca57;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-vial feature-icon animate-float text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">🩸 Diabetes</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Early diabetes detection through comprehensive health parameter analysis and glucose monitoring.</p>
+                        <a href="{{ url_for('diabetes') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-search me-2 text-warning"></i>Check Risk
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 animate-bounce-in" style="animation-delay: 0.3s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #4ecdc4, #44a08d); border: 3px solid #4ecdc4;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-microscope feature-icon animate-wiggle text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">🔬 Cancer Detection</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Voice biomarker analysis for early cancer detection and comprehensive screening protocols.</p>
+                        <a href="{{ url_for('cancer') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-user-md me-2 text-info"></i>Screen Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 animate-bounce-in" style="animation-delay: 0.4s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #45b7d1, #96c93d); border: 3px solid #45b7d1;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-robot feature-icon animate-wiggle text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">🤖 AI Assistant</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">24/7 intelligent health guidance and personalized medical insights powered by advanced AI.</p>
+                        <a href="{{ url_for('chat') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-comments me-2 text-primary"></i>Chat Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Medical Features -->
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6 animate-bounce-in" style="animation-delay: 0.5s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); border: 3px solid #6c5ce7;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-brain feature-icon animate-brain-pulse text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">🧠 Mental Health</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Comprehensive screening for depression, anxiety, and stress with AI sentiment analysis and personalized therapy recommendations.</p>
+                        <a href="{{ url_for('mental_health') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-heart me-2 text-purple"></i>Screen Mental Health
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 animate-bounce-in" style="animation-delay: 0.6s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #00cec9, #55a3ff); border: 3px solid #00cec9;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-bed feature-icon animate-float text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">😴 Sleep & Wellness</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Track sleep patterns, fatigue levels, and receive AI-powered wellness insights with personalized sleep optimization.</p>
+                        <a href="{{ url_for('sleep_wellness') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-moon me-2 text-info"></i>Track Sleep
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 animate-bounce-in" style="animation-delay: 0.7s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #fd79a8, #fdcb6e); border: 3px solid #fd79a8;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-dumbbell feature-icon animate-bounce text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">💪 Health Coaching</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Personalized fitness plans, nutrition advice, and goal tracking with AI recommendations and progress monitoring.</p>
+                        <a href="{{ url_for('health_coaching') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-target me-2 text-warning"></i>Set Goals
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 animate-bounce-in" style="animation-delay: 0.8s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #00b894, #00cec9); border: 3px solid #00b894;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-trophy feature-icon animate-trophy-shine text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">🏆 Health Quests</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Gamified health challenges with credits and rewards for preventive care actions and healthy lifestyle achievements.</p>
+                        <a href="{{ url_for('health_quests') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-gamepad me-2 text-success"></i>Start Quest
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 animate-bounce-in" style="animation-delay: 0.9s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #e17055, #fdcb6e); border: 3px solid #e17055;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-video feature-icon animate-wiggle text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">📹 Telemedicine</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Connect with healthcare professionals and access emergency support resources through secure virtual consultations.</p>
+                        <a href="{{ url_for('telemedicine') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-user-md me-2 text-danger"></i>Connect
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 animate-bounce-in" style="animation-delay: 1.0s;">
+                <div class="card feature-card h-100 shadow-lg" style="background: linear-gradient(135deg, #e84393, #fd79a8); border: 3px solid #e84393;">
+                    <div class="card-header text-white text-center position-relative">
+                        <i class="fas fa-tasks feature-icon animate-pulse-glow text-white" style="font-size: 4rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));"></i>
+                        <h5 class="mb-0 fw-bold">⚡ Smart Interventions</h5>
+                    </div>
+                    <div class="card-body text-center text-white">
+                        <p class="card-text fw-medium">Real-time personalized care pathways and intervention recommendations based on your health assessment results.</p>
+                        <a href="{{ url_for('interventions') }}" class="btn btn-light btn-lg fw-bold">
+                            <i class="fas fa-route me-2 text-danger"></i>View Plan
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ff6b6b 100%); background-size: 300% 300%; animation: gradient-shift 10s ease infinite;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-6 fw-bold text-white animate-slide-up">
+                <i class="fas fa-chart-bar me-3 animate-bounce"></i>Platform Statistics
+            </h2>
+        </div>
+        <div class="row text-center">
+            <div class="col-md-3 animate-bounce-in" style="animation-delay: 0.2s;">
+                <div class="stat-card p-4 rounded-3 shadow-lg mb-3" style="background: linear-gradient(45deg, #ff6b6b, #ff8e53); border: 3px solid rgba(255,255,255,0.3);">
+                    <i class="fas fa-user-check fa-3x text-white mb-3 animate-heartbeat"></i>
+                    <div class="stats-counter text-white" data-target="10000" style="font-size: 3rem;">0</div>
+                    <p class="lead text-white fw-bold">Health Assessments</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-bounce-in" style="animation-delay: 0.4s;">
+                <div class="stat-card p-4 rounded-3 shadow-lg mb-3" style="background: linear-gradient(45deg, #4ecdc4, #44a08d); border: 3px solid rgba(255,255,255,0.3);">
+                    <i class="fas fa-bullseye fa-3x text-white mb-3 animate-spin-slow"></i>
+                    <div class="stats-counter text-white" data-target="95" style="font-size: 3rem;">0</div>
+                    <p class="lead text-white fw-bold">% Accuracy Rate</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-bounce-in" style="animation-delay: 0.6s;">
+                <div class="stat-card p-4 rounded-3 shadow-lg mb-3" style="background: linear-gradient(45deg, #45b7d1, #96c93d); border: 3px solid rgba(255,255,255,0.3);">
+                    <i class="fas fa-layer-group fa-3x text-white mb-3 animate-wiggle"></i>
+                    <div class="stats-counter text-white" data-target="7" style="font-size: 3rem;">0</div>
+                    <p class="lead text-white fw-bold">Health Categories</p>
+                </div>
+            </div>
+            <div class="col-md-3 animate-bounce-in" style="animation-delay: 0.8s;">
+                <div class="stat-card p-4 rounded-3 shadow-lg mb-3" style="background: linear-gradient(45deg, #feca57, #ff9ff3); border: 3px solid rgba(255,255,255,0.3);">
+                    <i class="fas fa-clock fa-3x text-white mb-3 animate-bounce"></i>
+                    <div class="stats-counter text-white" data-target="24" style="font-size: 3rem;">0</div>
+                    <p class="lead text-white fw-bold">24/7 AI Support</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 25%, #fecfef 75%, #ffecd2 100%); position: relative; overflow: hidden;">
+    <!-- Medical Background Pattern -->
+
+    
+    <div class="container text-center position-relative">
+        <div class="animate-slide-up">
+            <h2 class="display-5 fw-bold mb-4" style="background: linear-gradient(45deg, #667eea, #764ba2, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                <i class="fas fa-rocket me-3 animate-bounce" style="color: #ff6b6b;"></i>Ready to Transform Your Health Journey?
+            </h2>
+            <p class="lead mb-5 text-dark fw-medium">Join thousands of users who trust IllnessInsight for comprehensive AI-powered health insights and personalized care</p>
+            
+            <!-- Action Buttons -->
+            <div class="row justify-content-center g-3 mb-4">
+                <div class="col-md-4">
+                    <a href="{{ url_for('mental_health') }}" class="btn btn-lg w-100 fw-bold shadow-lg animate-medical-pulse" style="background: linear-gradient(45deg, #ff6b6b, #ff8e53); border: none; color: white; padding: 15px 30px;">
+                        <i class="fas fa-heart me-2 animate-heartbeat"></i>Start Mental Health Assessment
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('heart') }}" class="btn btn-lg w-100 fw-bold shadow-lg" style="background: linear-gradient(45deg, #4ecdc4, #44a08d); border: none; color: white; padding: 15px 30px;">
+                        <i class="fas fa-heartbeat me-2 animate-heartbeat"></i>Check Heart Health
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('chat') }}" class="btn btn-lg w-100 fw-bold shadow-lg animate-wiggle" style="background: linear-gradient(45deg, #45b7d1, #96c93d); border: none; color: white; padding: 15px 30px;">
+                        <i class="fas fa-robot me-2"></i>AI Health Assistant
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Feature Highlights -->
+            <div class="row justify-content-center mt-5">
+                <div class="col-md-3 text-center animate-bounce-in" style="animation-delay: 0.2s;">
+                    <div class="p-3">
+                        <i class="fas fa-shield-alt fa-3x mb-3 animate-pulse-glow" style="color: #4ecdc4;"></i>
+                        <h6 class="fw-bold text-dark">HIPAA Compliant</h6>
+                        <p class="small text-muted">Your data is secure</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center animate-bounce-in" style="animation-delay: 0.4s;">
+                    <div class="p-3">
+                        <i class="fas fa-brain fa-3x mb-3 animate-brain-pulse" style="color: #6c5ce7;"></i>
+                        <h6 class="fw-bold text-dark">AI-Powered</h6>
+                        <p class="small text-muted">Advanced machine learning</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center animate-bounce-in" style="animation-delay: 0.6s;">
+                    <div class="p-3">
+                        <i class="fas fa-clock fa-3x mb-3 animate-bounce" style="color: #fd79a8;"></i>
+                        <h6 class="fw-bold text-dark">24/7 Available</h6>
+                        <p class="small text-muted">Always here when you need us</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center animate-bounce-in" style="animation-delay: 0.8s;">
+                    <div class="p-3">
+                        <i class="fas fa-user-md fa-3x mb-3 animate-wiggle" style="color: #00b894;"></i>
+                        <h6 class="fw-bold text-dark">Medical Grade</h6>
+                        <p class="small text-muted">Clinically validated algorithms</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Animate counters
+function animateCounters() {
+    const counters = document.querySelectorAll('.stats-counter');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const increment = target / 200;
+        let current = 0;
+        
+        const updateCounter = () => {
+            if (current < target) {
+                current += increment;
+                counter.textContent = Math.ceil(current);
+                setTimeout(updateCounter, 10);
+            } else {
+                counter.textContent = target;
+            }
+        };
+        
+        updateCounter();
+    });
+}
+
+// Intersection Observer for animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            if (entry.target.classList.contains('stats-counter')) {
+                animateCounters();
+            }
+        }
+    });
+}, observerOptions);
+
+// Observe stats section
+document.addEventListener('DOMContentLoaded', function() {
+    const statsCounters = document.querySelectorAll('.stats-counter');
+    if (statsCounters.length > 0) {
+        // Use Intersection Observer to trigger animation when stats come into view
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    statsObserver.disconnect(); // Run only once
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        statsCounters.forEach(counter => {
+            statsObserver.observe(counter);
+        });
+    }
+});
+
+// Add custom button styles
+document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        .btn-outline-purple { border-color: #6f42c1; color: #6f42c1; }
+        .btn-outline-purple:hover { background-color: #6f42c1; color: white; }
+        .btn-outline-teal { border-color: #20c997; color: #20c997; }
+        .btn-outline-teal:hover { background-color: #20c997; color: white; }
+        .btn-outline-orange { border-color: #fd7e14; color: #fd7e14; }
+        .btn-outline-orange:hover { background-color: #fd7e14; color: white; }
+        .btn-outline-pink { border-color: #e83e8c; color: #e83e8c; }
+        .btn-outline-pink:hover { background-color: #e83e8c; color: white; }
+        .btn-outline-indigo { border-color: #6610f2; color: #6610f2; }
+        .btn-outline-indigo:hover { background-color: #6610f2; color: white; }
+    </style>
+`);
+</script>
+{% endblock %}

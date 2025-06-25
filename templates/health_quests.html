@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+
+{% block title %}Health Quests - IllnessInsight{% endblock %}
+
+{% block extra_css %}
+<style>
+@keyframes trophy-glow {
+    0%, 100% { transform: scale(1) rotate(0deg); color: #ffc107; filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.5)); }
+    50% { transform: scale(1.2) rotate(-5deg); color: #ff8c00; filter: drop-shadow(0 0 25px rgba(255, 140, 0, 0.8)); }
+}
+
+@keyframes quest-sparkle {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-15px) scale(1.1); opacity: 1; }
+}
+
+.quests-background {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 25%, #ffe082 50%, #ffb74d 75%, #ff9800 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.quests-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g opacity="0.15"><circle cx="25" cy="25" r="2" fill="%23ffc107"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="75" cy="55" r="3" fill="%23ff8c00"><animate attributeName="r" values="3;5;3" dur="4s" repeatCount="indefinite"/></circle><path d="M40 30 L45 20 L50 30 L60 30 L52 38 L55 48 L45 42 L35 48 L38 38 L30 30 Z" fill="%23ffb300" opacity="0.3"><animateTransform attributeName="transform" type="rotate" values="0 45 35;360 45 35" dur="10s" repeatCount="indefinite"/></path></g></svg>') repeat;
+    background-size: 180px 180px;
+    animation: float-quests 12s linear infinite;
+}
+
+@keyframes float-quests {
+    0% { background-position: 0 0; }
+    100% { background-position: 180px 180px; }
+}
+
+.trophy-icon-large {
+    font-size: 6rem;
+    animation: trophy-glow 2.5s infinite;
+}
+
+.quest-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 3px solid #ffc107;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quest-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 193, 7, 0.1), transparent);
+    animation: shimmer-gold 3s linear infinite;
+}
+
+@keyframes shimmer-gold {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.quest-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(255, 193, 7, 0.3);
+}
+
+.floating-quest-icons {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.floating-quest-icon {
+    position: absolute;
+    animation: quest-sparkle 4s ease-in-out infinite;
+}
+
+.quest-icon-1 { top: 12%; left: 5%; font-size: 2.5rem; color: rgba(255, 193, 7, 0.4); animation-delay: 0s; }
+.quest-icon-2 { top: 75%; left: 8%; font-size: 2rem; color: rgba(255, 140, 0, 0.4); animation-delay: 1s; }
+.quest-icon-3 { top: 20%; right: 10%; font-size: 2.8rem; color: rgba(255, 179, 0, 0.4); animation-delay: 2s; }
+.quest-icon-4 { top: 65%; right: 12%; font-size: 2.2rem; color: rgba(255, 152, 0, 0.3); animation-delay: 3s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quests-background">
+    <div class="floating-quest-icons">
+        <i class="fas fa-trophy floating-quest-icon quest-icon-1"></i>
+        <i class="fas fa-medal floating-quest-icon quest-icon-2"></i>
+        <i class="fas fa-star floating-quest-icon quest-icon-3"></i>
+        <i class="fas fa-gem floating-quest-icon quest-icon-4"></i>
+    </div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5 animate-fade-in position-relative">
+                <i class="fas fa-trophy trophy-icon-large text-warning mb-4"></i>
+                <h1 class="display-4 fw-bold text-warning">
+                    🏆 Health Quests
+                </h1>
+                <p class="lead text-dark animate-slide-up" style="animation-delay: 0.3s; font-weight: 600;">Gamify your health journey with engaging challenges and rewards</p>
+                <div class="bg-warning text-dark px-3 py-2 rounded-pill d-inline-block">
+                    <i class="fas fa-coins me-2"></i>Total Credits: {{ total_credits }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Available Quests -->
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-flag me-2"></i>Available Quests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Fitness Quest -->
+                        <div class="col-12">
+                            <div class="card border-2 border-primary">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title text-primary">
+                                                <i class="fas fa-dumbbell me-2"></i>Fitness Champion
+                                            </h6>
+                                            <p class="card-text small text-muted">Complete 30 minutes of exercise daily for a week</p>
+                                            <span class="badge bg-success">100 Credits</span>
+                                            <small class="text-muted d-block">Duration: 7 days</small>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('start_health_quest', quest_type='fitness') }}" class="d-inline">
+                                            <button type="submit" class="btn btn-primary btn-sm">Start Quest</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nutrition Quest -->
+                        <div class="col-12">
+                            <div class="card border-2 border-info">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title text-info">
+                                                <i class="fas fa-apple-alt me-2"></i>Nutrition Master
+                                            </h6>
+                                            <p class="card-text small text-muted">Log healthy meals and track nutrition for 5 days</p>
+                                            <span class="badge bg-success">75 Credits</span>
+                                            <small class="text-muted d-block">Duration: 5 days</small>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('start_health_quest', quest_type='nutrition') }}" class="d-inline">
+                                            <button type="submit" class="btn btn-info btn-sm">Start Quest</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mindfulness Quest -->
+                        <div class="col-12">
+                            <div class="card border-2 border-success">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title text-success">
+                                                <i class="fas fa-leaf me-2"></i>Mindful Warrior
+                                            </h6>
+                                            <p class="card-text small text-muted">Practice meditation or mindfulness for 10 minutes daily</p>
+                                            <span class="badge bg-success">50 Credits</span>
+                                            <small class="text-muted d-block">Duration: 7 days</small>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('start_health_quest', quest_type='mindfulness') }}" class="d-inline">
+                                            <button type="submit" class="btn btn-success btn-sm">Start Quest</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sleep Quest -->
+                        <div class="col-12">
+                            <div class="card border-2 border-purple">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title text-purple">
+                                                <i class="fas fa-bed me-2"></i>Sleep Optimizer
+                                            </h6>
+                                            <p class="card-text small text-muted">Maintain consistent sleep schedule for one week</p>
+                                            <span class="badge bg-success">80 Credits</span>
+                                            <small class="text-muted d-block">Duration: 7 days</small>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('start_health_quest', quest_type='sleep') }}" class="d-inline">
+                                            <button type="submit" class="btn btn-purple btn-sm">Start Quest</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hydration Quest -->
+                        <div class="col-12">
+                            <div class="card border-2 border-warning">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title text-warning">
+                                                <i class="fas fa-tint me-2"></i>Hydration Hero
+                                            </h6>
+                                            <p class="card-text small text-muted">Drink 8 glasses of water daily for 5 days</p>
+                                            <span class="badge bg-success">60 Credits</span>
+                                            <small class="text-muted d-block">Duration: 5 days</small>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('start_health_quest', quest_type='hydration') }}" class="d-inline">
+                                            <button type="submit" class="btn btn-warning btn-sm">Start Quest</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Steps Quest -->
+                        <div class="col-12">
+                            <div class="card border-2 border-dark">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title text-dark">
+                                                <i class="fas fa-walking me-2"></i>Step Master
+                                            </h6>
+                                            <p class="card-text small text-muted">Walk 10,000 steps daily for 10 days</p>
+                                            <span class="badge bg-success">120 Credits</span>
+                                            <small class="text-muted d-block">Duration: 10 days</small>
+                                        </div>
+                                        <form method="POST" action="{{ url_for('start_health_quest', quest_type='steps') }}" class="d-inline">
+                                            <button type="submit" class="btn btn-dark btn-sm">Start Quest</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active & Completed Quests -->
+        <div class="col-lg-6">
+            <!-- Active Quests -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-play me-2"></i>Active Quests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set active_quests = gamification_progress | selectattr('status', 'equalto', 'active') | list %}
+                    {% if active_quests %}
+                        {% for quest in active_quests %}
+                        <div class="card mb-3 border-start border-4 border-success quest-timer-card" data-quest-id="{{ quest.id }}" data-end-date="{{ quest.end_date }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ quest.quest_name }}</h6>
+                                    <span class="badge bg-primary quest-timer">Loading...</span>
+                                </div>
+                                <p class="card-text small text-muted">{{ quest.description }}</p>
+                                <p class="small mb-2"><strong>Daily Target:</strong> {{ quest.daily_target }}</p>
+                                
+                                <!-- Progress Bar -->
+                                <div class="progress mb-2" style="height: 10px;">
+                                    <div class="progress-bar bg-success" style="width: {{ quest.progress }}%"></div>
+                                </div>
+                                
+                                <!-- Quest Stats -->
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="small text-muted">Progress</div>
+                                        <div class="fw-bold text-success">{{ "%.1f"|format(quest.progress) }}%</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted">Days Done</div>
+                                        <div class="fw-bold text-primary">{{ quest.days_completed }}/{{ quest.duration_days }}</div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="small text-muted">Credits</div>
+                                        <div class="fw-bold text-warning">{{ quest.total_credits }}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-success mark-day-complete" 
+                                            data-quest-id="{{ quest.id }}"
+                                            {% if quest.days_completed >= quest.duration_days %}disabled{% endif %}>
+                                        <i class="fas fa-check me-1"></i>Mark Day Complete
+                                    </button>
+                                    <button class="btn btn-sm btn-warning complete-quest" 
+                                            data-quest-id="{{ quest.id }}">
+                                        <i class="fas fa-trophy me-1"></i>Complete Quest
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-play-circle fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No active quests. Start one above!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Completed Quests -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>Completed Quests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set completed_quests = gamification_progress | selectattr('status', 'equalto', 'completed') | list %}
+                    {% if completed_quests %}
+                        {% for quest in completed_quests[:5] %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border border-success rounded">
+                            <div>
+                                <h6 class="mb-0 text-success">{{ quest.quest_name }}</h6>
+                                <small class="text-muted">Completed: {{ quest.completion_date[:10] if quest.completion_date else 'N/A' }}</small>
+                            </div>
+                            <span class="badge bg-warning text-dark">+{{ quest.credits_earned }} Credits</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-trophy fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No completed quests yet. Keep going!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rewards & Benefits -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gift me-2"></i>Rewards & Benefits
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-3 text-center">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-robot fa-2x text-primary"></i>
+                            </div>
+                            <h6 class="mt-2">Extended AI Chat</h6>
+                            <p class="small text-muted">100 Credits = 30 extra AI conversations</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-chart-line fa-2x text-success"></i>
+                            </div>
+                            <h6 class="mt-2">Advanced Analytics</h6>
+                            <p class="small text-muted">150 Credits = Detailed health insights</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-user-md fa-2x text-info"></i>
+                            </div>
+                            <h6 class="mt-2">Telehealth Consultation</h6>
+                            <p class="small text-muted">200 Credits = 15-minute consultation</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-certificate fa-2x text-warning"></i>
+                            </div>
+                            <h6 class="mt-2">Health Badges</h6>
+                            <p class="small text-muted">Earn badges for milestones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize quest timers
+    updateQuestTimers();
+    setInterval(updateQuestTimers, 60000); // Update every minute
+    
+    // Handle day completion
+    document.querySelectorAll('.mark-day-complete').forEach(button => {
+        button.addEventListener('click', function() {
+            const questId = this.dataset.questId;
+            markDayComplete(questId, this);
+        });
+    });
+    
+    // Handle quest completion
+    document.querySelectorAll('.complete-quest').forEach(button => {
+        button.addEventListener('click', function() {
+            const questId = this.dataset.questId;
+            completeQuest(questId, this);
+        });
+    });
+});
+
+function updateQuestTimers() {
+    document.querySelectorAll('.quest-timer-card').forEach(card => {
+        const endDate = new Date(card.dataset.endDate);
+        const now = new Date();
+        const timer = card.querySelector('.quest-timer');
+        
+        if (endDate > now) {
+            const timeLeft = endDate - now;
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (days > 0) {
+                timer.textContent = `${days}d ${hours}h ${minutes}m`;
+                timer.className = 'badge bg-primary quest-timer';
+            } else if (hours > 0) {
+                timer.textContent = `${hours}h ${minutes}m`;
+                timer.className = 'badge bg-warning quest-timer';
+            } else {
+                timer.textContent = `${minutes}m`;
+                timer.className = 'badge bg-danger quest-timer';
+            }
+        } else {
+            timer.textContent = 'Expired';
+            timer.className = 'badge bg-secondary quest-timer';
+        }
+    });
+}
+
+function markDayComplete(questId, button) {
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Updating...';
+    
+    fetch(`/complete_quest_day/${questId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Day marked as completed!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showToast('Error updating progress. Please try again.', 'error');
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-check me-1"></i>Mark Day Complete';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Network error. Please try again.', 'error');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-check me-1"></i>Mark Day Complete';
+    });
+}
+
+function completeQuest(questId, button) {
+    if (!confirm('Are you sure you want to complete this quest? This action cannot be undone.')) {
+        return;
+    }
+    
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Completing...';
+    
+    fetch(`/complete_quest/${questId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Quest completed! Credits earned!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showToast('Error completing quest. Please try again.', 'error');
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-trophy me-1"></i>Complete Quest';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Network error. Please try again.', 'error');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-trophy me-1"></i>Complete Quest';
+    });
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
