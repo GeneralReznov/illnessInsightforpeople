@@ -132,7 +132,7 @@ The most important features of our project:
 
 ## 📽️ Demo & Deliverables
  
- - **Demo Video Link:** 
+ - **Demo Video Link:** https://drive.google.com/file/d/1EJN-jRF0Y7BPh4ieNoUu61W5SckYFbsj/view?usp=drive_link
  - **App Link:** https://illnessinsightforpeople.onrender.com/
 
 
