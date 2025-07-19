@@ -24,7 +24,7 @@ except ImportError:
 model = None
 if GENAI_AVAILABLE:
     try:
-        os.environ['gemini_api_key'] = "AIzaSyCZGGDVIyjebUyHX8m0xO6f1pBD6KKjErc"
+        os.environ['gemini_api_key'] = "AIzaSyAPrO5G4SUuY37_LCOlFW-bFwANfK6RFVI"
         api_key = os.environ.get('gemini_api_key')
         if api_key:
             genai.configure(api_key=os.environ['gemini_api_key'])
